@@ -35,8 +35,7 @@ export PUBLIC_IP=$IP
 END
 
 rm *.yml
-cd /var/lib/cloudbreak-deployment
-cbd generate
-cbd pull-parallel  
-cbd start 
+cd /var/lib/cloudbreak-deployment && cbd generate
+cd /var/lib/cloudbreak-deployment && cbd pull-parallel  
+cd /var/lib/cloudbreak-deployment && cbd start 
 
