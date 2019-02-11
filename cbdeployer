@@ -2,15 +2,14 @@ yum -y install net-tools ntp wget lsof unzip tar iptables-services
 systemctl enable ntpd && systemctl start ntpd
 systemctl disable firewalld && systemctl stop firewalld
 iptables --flush INPUT && iptables --flush FORWARD && service iptables save
-
 setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 getenforce
-yum install -y docker
+yum install -y -q docker
 systemctl start docker
 systemctl enable docker
 
-yum install yum-utils
+yum install yum-utils -y -q
 yum-config-manager --enable rhui-REGION-rhel-server-extras
 yum install -y -q docker
 systemctl start docker
@@ -38,7 +37,6 @@ END
 rm *.yml
 cd /var/lib/cloudbreak-deployment
 cbd generate
-
 cbd pull-parallel  
 cbd start 
 
