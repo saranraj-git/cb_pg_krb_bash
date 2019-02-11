@@ -1,31 +1,38 @@
+echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services
 systemctl enable ntpd && systemctl start ntpd
 systemctl disable firewalld && systemctl stop firewalld
 iptables --flush INPUT && iptables --flush FORWARD && service iptables save
 setenforce 0
+
+echo "###################################"
+
+echo "Disabling SE Linux"
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 getenforce
+
+echo "###################################"
+echo "Installing Docker"
 yum install -y -q docker
 systemctl start docker
 systemctl enable docker
-
 yum install yum-utils -y -q
 yum-config-manager --enable rhui-REGION-rhel-server-extras
-yum install -y -q docker
-systemctl start docker
-systemctl enable docker
-
 sed -i 's/journald/json-file/g'  /etc/sysconfig/docker
+
+echo "###################################"
+echo "Configuring docker"
 cat /etc/sysconfig/docker | grep "log-driver"
 systemctl restart docker
 systemctl status docker
-
 wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && chmod +x ./jq && cp jq /usr/bin
 
-yum -y -q install unzip tar
+echo "###################################"
+echo "Installing Cloudbreak"
 curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd
-cbd --version
 
+echo "###################################"
+echo "$(cbd --version)"
 mkdir -p /var/lib/cloudbreak-deployment && cd /var/lib/cloudbreak-deployment
 export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 -d'/' | tail -n1)
 cat >> Profile << END
@@ -34,10 +41,18 @@ export UAA_DEFAULT_USER_PW=Hadoop-123
 export UAA_DEFAULT_USER_EMAIL=svenugopal@hortonworks.com
 export PUBLIC_IP=$IP
 END
-
 rm *.yml
+
+echo "###################################"
+echo "Configuring cloudbreak"
 cd /var/lib/cloudbreak-deployment && cbd generate
 cd /var/lib/cloudbreak-deployment && cbd pull-parallel  
 rm -f /var/lib/cloudbreak-deployment/certs/*
+
+echo "###################################"
+echo "Starting cloudbreak"
 cd /var/lib/cloudbreak-deployment && cbd kill && cbd start 
 
+echo "###################################"
+echo "Start using Cloudbreak"
+cbd login
