@@ -42,4 +42,3 @@ cbd generate
 cbd pull-parallel  
 cbd start 
 
-cbd logs cloudbreak
