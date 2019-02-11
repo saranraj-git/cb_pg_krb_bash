@@ -1,0 +1,45 @@
+yum -y install net-tools ntp wget lsof unzip tar iptables-services
+systemctl enable ntpd && systemctl start ntpd
+systemctl disable firewalld && systemctl stop firewalld
+iptables --flush INPUT && iptables --flush FORWARD && service iptables save
+
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+getenforce
+yum install -y docker
+systemctl start docker
+systemctl enable docker
+
+yum install yum-utils
+yum-config-manager --enable rhui-REGION-rhel-server-extras
+yum install -y docker
+systemctl start docker
+systemctl enable docker
+
+sed -i 's/journald/json-file/g'  /etc/sysconfig/docker
+cat /etc/sysconfig/docker | grep "log-driver"
+systemctl restart docker
+systemctl status docker
+
+yum -y install unzip tar
+curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd
+cbd --version
+
+mkdir -p /var/lib/cloudbreak-deployment
+cd /var/lib/cloudbreak-deployment
+
+cat >> Profile << END
+export UAA_DEFAULT_SECRET=Hadoop-123
+export UAA_DEFAULT_USER_PW=Hadoop-123
+export UAA_DEFAULT_USER_EMAIL=svenugopal@hortonworks.com
+export PUBLIC_IP=
+END
+
+rm *.yml
+cd /var/lib/cloudbreak-deployment
+cbd generate
+
+cbd pull-parallel  
+cbd start 
+
+cbd logs cloudbreak
