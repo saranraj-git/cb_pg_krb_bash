@@ -26,8 +26,7 @@ yum -y -q install unzip tar
 curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd
 cbd --version
 
-mkdir -p /var/lib/cloudbreak-deployment
-cd /var/lib/cloudbreak-deployment
+mkdir -p /var/lib/cloudbreak-deployment && cd /var/lib/cloudbreak-deployment
 export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 -d'/' | tail -n1)
 cat >> Profile << END
 export UAA_DEFAULT_SECRET=Hadoop-123
