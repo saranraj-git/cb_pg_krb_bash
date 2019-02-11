@@ -39,5 +39,6 @@ END
 rm *.yml
 cd /var/lib/cloudbreak-deployment && cbd generate
 cd /var/lib/cloudbreak-deployment && cbd pull-parallel  
-cd /var/lib/cloudbreak-deployment && cbd start 
+rm -f /var/lib/cloudbreak-deployment/certs/*
+cd /var/lib/cloudbreak-deployment && cbd kill && cbd start 
 
