@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services
 systemctl enable ntpd && systemctl start ntpd
