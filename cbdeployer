@@ -40,7 +40,7 @@ export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 
 cat >> Profile << END
 export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
-export UAA_DEFAULT_USER_EMAIL=svenugopal@hortonworks.com
+export UAA_DEFAULT_USER_EMAIL=$USER@example.com
 export PUBLIC_IP=$IP
 END
 rm *.yml
