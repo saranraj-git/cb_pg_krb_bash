@@ -35,6 +35,7 @@ curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_
 
 echo "###################################"
 echo "$(cbd --version)"
+echo "Creating Profile file for Cloudbreak"
 mkdir -p /var/lib/cloudbreak-deployment && cd /var/lib/cloudbreak-deployment
 export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 -d'/' | tail -n1)
 cat >> Profile << END
@@ -46,8 +47,11 @@ END
 rm *.yml
 
 echo "###################################"
-echo "Configuring cloudbreak"
+echo "Generating yml files for cloudbreak docker images"
 cd /var/lib/cloudbreak-deployment && cbd generate
+
+echo "###################################"
+echo "Downloading Cloudbreak docker images"
 cd /var/lib/cloudbreak-deployment && cbd pull-parallel  
 rm -f /var/lib/cloudbreak-deployment/certs/*
 
