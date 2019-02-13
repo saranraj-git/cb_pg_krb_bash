@@ -24,14 +24,14 @@ export DATABASE_USERNAME=$pgserverusername
 export DATABASE_PASSWORD=$pgserverpassword
 
 # Checking the required DB created i.e cbdb,periscopedb, uaadb and the cert exists in /var/lib/cloudbreak-deployment/cert/database.crt for SSL enabled Postgres Login
-if [ ! -z "$pgserver" ] && [ ! -z "$pgserverport" ] && [ ! -z "$pgserverusername" ] && [ ! -z "$pgserverpassword" ] && [ -f /var/lib/cloudbreak-deployment/certs/database.crt ]; then
+: 'if [ ! -z "$pgserver" ] && [ ! -z "$pgserverport" ] && [ ! -z "$pgserverusername" ] && [ ! -z "$pgserverpassword" ] && [ -f /var/lib/cloudbreak-deployment/certs/database.crt ]; then
     echo "Checking the DB connectivity"
 
 
 else
     echo "Please enter all these details Postgres_server_hostname/Port/Username/Pwd and cert exists in /var/lib/cloudbreak-deployment/certs/database.crt"
 fi
-
+'
 
 
 # Updating the Profile file
