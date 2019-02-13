@@ -12,10 +12,10 @@ sudo yum install -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel
 sudo yum install -y postgresql10 
 
 # Getting the Postgres Server details
-pgserver="cbreakpsql.postgres.database.azure.com" #eg: cbreakpsql.postgres.database.azure.com
+pgserver="testsrj.field.hortonworks.com" #eg: cbreakpsql.postgres.database.azure.com
 pgserverport="5432"  # 5432
-pgserverusername="psqladmin@postgresserver" # psqladmin@postgresserver
-pgserverpassword="MyserverP@ssword" # MyserverP@ssword
+pgserverusername="cbadmin" # psqladmin@postgresserver
+pgserverpassword="Hadoop-123" # MyserverP@ssword
 
 # Set the Environment variables
 export DATABASE_HOST=$pgserver
