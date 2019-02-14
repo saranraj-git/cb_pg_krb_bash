@@ -10,7 +10,7 @@ To execute this script, it requires 7 arguments in this order :
 	6. Azure App ID (Azure AD -> App registrations -> MyApplication -> Application ID)
   7. Azure App Password (Azure AD -> App registrations -> MyApplication -> Keys)
   
-  eg: sh ./IntegrateAppKey.sh <CB_ServerName> <CB_Username> <CB_Password> <Az_Sub-id> <Az_Ten-id> <Az-AppID> <Az-AppPwd>"
+  eg: sh ./IntegrateAppKey.sh https://cloudbreakVM.com:443 root@example.com myP@ssw0rd xsubs-id-detailx xtent-idx xapp-id-x xapp-pwdx"
 '
 if [ $# -eq 7 ]; then
 
