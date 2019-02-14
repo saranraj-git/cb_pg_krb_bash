@@ -7,6 +7,8 @@ This script helps in the following:
   4. Start the Cloudbreak Web UI
   5. Enabling Cloudbreak to start during boot time
 '
+
+echo "###################################"
 echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services
 systemctl enable ntpd && systemctl start ntpd
@@ -15,7 +17,6 @@ iptables --flush INPUT && iptables --flush FORWARD && service iptables save
 setenforce 0
 
 echo "###################################"
-
 echo "Disabling SE Linux"
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 getenforce
