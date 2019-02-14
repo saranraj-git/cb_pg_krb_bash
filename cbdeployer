@@ -65,7 +65,12 @@ echo "Starting cloudbreak"
 cd /var/lib/cloudbreak-deployment && cbd kill && cbd start 
 
 echo "###################################"
+echo "Enabling Cloudbreak to start during boot time"
+echo "cd /var/lib/cloudbreak-deployment && cbd kill && cbd start" >> /etc/rc.d/rc.local && chmod +x /etc/rc.d/rc.local
+
+echo "###################################"
 echo "Start using Cloudbreak"
 echo "Cloudbreak WebUI URL : https://$IP"
 echo "Username : cbadmin@example.com"
 echo "Password : Hadoop-123"
+
