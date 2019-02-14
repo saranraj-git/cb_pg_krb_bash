@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-
+: '
+This script helps in the following:
+  1. Installing the pre-requisites of Cloudbreak
+  2. Download required containers and Install Cloudbreak 
+  3. Configure Cloudbreak
+  4. Start the Cloudbreak Web UI
+'
 echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services
 systemctl enable ntpd && systemctl start ntpd
