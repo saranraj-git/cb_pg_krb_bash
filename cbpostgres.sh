@@ -6,7 +6,7 @@ Parameters required for running this script
     2. Postgres Server Port number
     3. Postgres Server Username
     4. Postgres Server Password
-    5. URL of the Postgres server Client Certificate
+    5. URL of the Postgres Instance - Client Certificate
 
 Script execution procedure:
 Eg:
