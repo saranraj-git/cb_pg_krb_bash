@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 : '
 This script is meant for integrating the SSL Enabled Azure Postgres into Cloudbreak as its backend
-Pre-requisites for executing this script
-1. SSL cert for accessing the Azure postgres server must be placed under /var/lib/cloudbreak-deployment/
-2. cert name has to renamed as database.crt  ( Eg: /var/lib/cloudbreak-deployment/database.crt )
-3. Azure Postgres server details must be specified 
+Parameters required for running this script
+    1. Postgres Server FQDN
+    2. Postgres Server Port number
+    3. Postgres Server Username
+    4. Postgres Server Password
+    5. URL of the Postgres server Client Certificate
+
+Script execution procedure:
+Eg:
+
+./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt
+
 '
+if [ $# -eq 5 ]; then
 
 # Installing the Postgres Client
 sudo yum install -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-redhat10-10-2.noarch.rpm  
 sudo yum install -y postgresql10 
 
 # Getting the Postgres Server details
-pgserver="testsrj.field.hortonworks.com" #eg: cbreakpsql.postgres.database.azure.com
-pgserverport="5432"  # 5432
-pgserverusername="cbadmin" # psqladmin@postgresserver
-pgserverpassword="Hadoop-123" # MyserverP@ssword
+pgserver="$1" #eg: cbreakpsql.postgres.database.azure.com
+pgserverport="$2"  # 5432
+pgserverusername="$3" # psqladmin@postgresserver
+pgserverpassword="$4" # MyserverP@ssword
 
 # Set the Environment variables
 export DATABASE_HOST=$pgserver
@@ -23,16 +32,8 @@ export DATABASE_PORT=$pgserverport
 export DATABASE_USERNAME=$pgserverusername
 export DATABASE_PASSWORD=$pgserverpassword
 
-# Checking the required DB created i.e cbdb,periscopedb, uaadb and the cert exists in /var/lib/cloudbreak-deployment/cert/database.crt for SSL enabled Postgres Login
-: 'if [ ! -z "$pgserver" ] && [ ! -z "$pgserverport" ] && [ ! -z "$pgserverusername" ] && [ ! -z "$pgserverpassword" ] && [ -f /var/lib/cloudbreak-deployment/certs/database.crt ]; then
-    echo "Checking the DB connectivity"
-
-
-else
-    echo "Please enter all these details Postgres_server_hostname/Port/Username/Pwd and cert exists in /var/lib/cloudbreak-deployment/certs/database.crt"
-fi
-'
-
+# Placing the Postgres Client certificate at the right location
+wget $5 -O /var/lib/cloudbreak-deployment/certs/database.crt && chmod 400 /var/lib/cloudbreak-deployment/certs/database.crt 
 
 # Updating the Profile file
 cat >> /var/lib/cloudbreak-deployment/Profile << END
@@ -60,3 +61,9 @@ END
 
 # restarting the cbd using the command "cbd restart"
 cd /var/lib/cloudbreak-deployment/ && cbd restart
+
+else
+    echo -e "This script requires 5 arguments in this order : \n Example \n ./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt
+"
+    exit 1;
+fi
