@@ -26,6 +26,18 @@ pgserverport="$2"  # 5432
 pgserverusername="$3" # psqladmin@postgresserver
 pgserverpassword="$4" # MyserverP@ssword
 
+: '
+Future Enhancements
+
+sudo -i -u postgres psql -c 'CREATE DATABASE cbdb'
+sudo -i -u postgres psql -c 'CREATE DATABASE uaadb'
+sudo -i -u postgres psql -c 'CREATE DATABASE periscopedb'
+sudo -i -u postgres psql -c "CREATE USER cbadmin WITH PASSWORD $4;"
+sudo -i -u postgres psql -c 'grant all privileges on database cbdb to "$3"'
+sudo -i -u postgres psql -c 'grant all privileges on database periscopedb to "$3"'
+sudo -i -u postgres psql -c 'grant all privileges on database uaadb to "$3"'
+'
+
 # Set the Environment variables
 export DATABASE_HOST=$pgserver
 export DATABASE_PORT=$pgserverport
