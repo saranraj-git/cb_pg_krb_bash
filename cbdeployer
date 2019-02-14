@@ -5,6 +5,7 @@ This script helps in the following:
   2. Download required containers and Install Cloudbreak 
   3. Configure Cloudbreak
   4. Start the Cloudbreak Web UI
+  5. Enabling Cloudbreak to start during boot time
 '
 echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services
