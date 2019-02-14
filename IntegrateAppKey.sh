@@ -15,8 +15,8 @@ To execute this script, it requires 7 arguments in this order :
 if [ $# -eq 7 ]; then
 
 curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /bin cb && chmod +x /bin/cb
-cb configure --server $1 --username $2--password $3
-cb credential create azure app-based --name azcred --subscription-id $4 --tenant-id $5 --app-id $6 --app-password $7
+cb configure --server "$1" --username "$2" --password "$3"
+cb credential create azure app-based --name azcred --subscription-id "$4" --tenant-id "$5" --app-id "$6" --app-password "$7"
 
 else
     echo -e "This script requires 7 arguments in this order : \n <CB_ServerName> <CB_Username> <CB_Password> <Az_Sub-id> <Az_Ten-id> <Az-AppID> <Az-AppPwd>"
