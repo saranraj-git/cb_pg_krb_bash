@@ -41,7 +41,7 @@ export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 
 cat >> Profile << END
 export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
-export UAA_DEFAULT_USER_EMAIL=$USER@example.com
+export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
 export PUBLIC_IP=$IP
 END
 rm *.yml
@@ -61,4 +61,6 @@ cd /var/lib/cloudbreak-deployment && cbd kill && cbd start
 
 echo "###################################"
 echo "Start using Cloudbreak"
-cbd login
+echo "Cloudbreak WebUI URL : https://$IP"
+echo "Username : cbadmin@example.com"
+echo "Password : Hadoop-123"
