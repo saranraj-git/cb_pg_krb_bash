@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 : '
 This script helps in integrating the Azure App Key to Cloudbreak
-Ingredients required for running this script would be:
-1. Azure Subscription ID
-2. Tenant ID (Azure AD -> Properties -> Directory ID)
-3. Application ID (Azure AD -> App registrations -> MyApplication -> Application ID)
-4. Application Password (Azure AD -> App registrations -> MyApplication -> Keys )
+To execute this script, it requires 7 arguments in this order : 
+	1. Cloudbreak Controller URL (eg. https://cloudbreakVM.com:443)
+	2. Cloudbreak username
+	3. Cloudbreak password
+	4. Azure Subscription ID
+	5. Azure Tenant ID (Azure AD -> Properties -> Directory ID)
+	6. Azure App ID (Azure AD -> App registrations -> MyApplication -> Application ID)
+  7. Azure App Password (Azure AD -> App registrations -> MyApplication -> Keys)
+  
+  eg: sh ./IntegrateAppKey.sh <CB_ServerName> <CB_Username> <CB_Password> <Az_Sub-id> <Az_Ten-id> <Az-AppID> <Az-AppPwd>"
 '
-subs=" "
-tentid=" "
-appid=" "
-apppwd=" "
+if [ $# -eq 7 ]; then
 
-cb credential list --table
+curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /bin cb && chmod +x /bin/cb
+cb configure --server $1 --username $2--password $3
+cb credential create azure app-based --name azcred --subscription-id $4 --tenant-id $5 --app-id $6 --app-password $7
 
-cb credential create azure app-based --name MyAzureCred --subscription-id $subs --tenant-id $tentid --app-id $appid --app-password $apppwd
+else
+    echo -e "This script requires 7 arguments in this order : \n <CB_ServerName> <CB_Username> <CB_Password> <Az_Sub-id> <Az_Ten-id> <Az-AppID> <Az-AppPwd>"
+    exit 1;
+fi
