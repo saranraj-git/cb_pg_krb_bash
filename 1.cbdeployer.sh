@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 : '
 
-NOTE : This script needs to be executed in the Cloudbreak Instance
+NOTE : This script needs to be executed in the Cloudbreak Instance !!!
 
 This script helps in the following:
   1. Installing the pre-requisites of Cloudbreak
