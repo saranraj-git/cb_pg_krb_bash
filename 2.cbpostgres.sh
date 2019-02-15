@@ -78,6 +78,7 @@ END
 cd /var/lib/cloudbreak-deployment/ && cbd restart
 
 else
-    echo -e "This script requires 5 arguments in this order : \n Example \n ./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt"
+    echo -e "This script requires 5 arguments in this order :"
+    echo -e "Example \n \n ./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt"
     exit 1;
 fi
