@@ -2,7 +2,9 @@
 : '
 This script is meant for integrating the SSL Enabled Azure Postgres into Cloudbreak as its backend
 
-NOTE: It needs to be executed ONLY on the Cloudbreak Instance !!!
+NOTE: Script needs to be executed ONLY on the CLOUDBREAK Instance !!!
+
+Postgres credentials given in this script must have the permissions to create database remotely
 
 Parameters required for running this script
     1. Postgres Server FQDN
@@ -11,7 +13,12 @@ Parameters required for running this script
     4. Postgres Server Password
     5. URL of the Postgres Instance - Client Certificate
 
-Script execution procedure:
+Script execution procedure: (Script parameters must be in the same order)
+
+Syntax :
+
+./cbpostgres.sh <Postgres Server FQDN>  <Postgres Server Port> <Postgres Username> <Postgres Password> <PG ClientcertURL>
+
 Eg:
 
 ./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt
@@ -19,7 +26,7 @@ Eg:
 '
 if [ $# -eq 5 ]; then
 
-# Installing the Postgres Client
+# Installing the Postgres Client on this machine to check the database is created
 sudo yum install -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-redhat10-10-2.noarch.rpm  
 sudo yum install -y postgresql10 
 
@@ -29,18 +36,6 @@ pgserverport="$2"  # 5432
 pgserverusername="$3" # psqladmin@postgresserver
 pgserverpassword="$4" # MyserverP@ssword
 
-: '
-Future Enhancements
-
-sudo -i -u postgres psql -c 'CREATE DATABASE cbdb'
-sudo -i -u postgres psql -c 'CREATE DATABASE uaadb'
-sudo -i -u postgres psql -c 'CREATE DATABASE periscopedb'
-sudo -i -u postgres psql -c "CREATE USER cbadmin WITH PASSWORD $4;"
-sudo -i -u postgres psql -c 'grant all privileges on database cbdb to "$3"'
-sudo -i -u postgres psql -c 'grant all privileges on database periscopedb to "$3"'
-sudo -i -u postgres psql -c 'grant all privileges on database uaadb to "$3"'
-'
-
 # Set the Environment variables
 export DATABASE_HOST=$pgserver
 export DATABASE_PORT=$pgserverport
@@ -49,6 +44,13 @@ export DATABASE_PASSWORD=$pgserverpassword
 
 # Placing the Postgres Client certificate at the right location
 wget $5 -O /var/lib/cloudbreak-deployment/certs/database.crt && chmod 400 /var/lib/cloudbreak-deployment/certs/database.crt 
+
+# Checking the postgres server to see if the database is created
+: '
+
+psql 
+
+'
 
 # Updating the Profile file
 cat >> /var/lib/cloudbreak-deployment/Profile << END
@@ -82,3 +84,17 @@ else
     echo -e "Example \n \n ./cbpostgres.sh myPGServer.com 5432 cbadmin cbP@ssw0rd http://certrepo/pgClientCert.crt"
     exit 1;
 fi
+
+
+
+: '
+Future Enhancements of this script
+
+sudo -i -u postgres psql -c 'CREATE DATABASE cbdb'
+sudo -i -u postgres psql -c 'CREATE DATABASE uaadb'
+sudo -i -u postgres psql -c 'CREATE DATABASE periscopedb'
+sudo -i -u postgres psql -c "CREATE USER cbadmin WITH PASSWORD $4;"
+sudo -i -u postgres psql -c 'grant all privileges on database cbdb to "$3"'
+sudo -i -u postgres psql -c 'grant all privileges on database periscopedb to "$3"'
+sudo -i -u postgres psql -c 'grant all privileges on database uaadb to "$3"'
+'
