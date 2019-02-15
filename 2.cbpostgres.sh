@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 : '
 This script is meant for integrating the SSL Enabled Azure Postgres into Cloudbreak as its backend
+
+NOTE: It needs to be executed ONLY on the Cloudbreak Instance !!!
+
 Parameters required for running this script
     1. Postgres Server FQDN
     2. Postgres Server Port number
