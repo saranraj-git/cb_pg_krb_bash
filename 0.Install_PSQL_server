@@ -52,8 +52,10 @@ echo "Port num	: 5432"
 echo "Username	: postgres"
 echo "Password	: Hadoop-123"
 
-# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=cbdb -w
-# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=periscopedb -w
-# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=uaadb -w
+echo "=========================================================="
+sudo -i -u postgres psql -c "\list" 
 
 
+# psql --host=$(hostname -f) --port=5432 --username=cbadmin --dbname=cbdb -w
+# psql --host=$(hostname -f) --port=5432 --username=cbadmin --dbname=periscopedb -w
+# psql --host=$(hostname -f) --port=5432 --username=cbadmin --dbname=uaadb -w
