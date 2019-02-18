@@ -1,0 +1,33 @@
+#!/bin/bash 
+
+sudo yum -y install postgresql-server postgresql-contrib
+sudo postgresql-setup initdb
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+echo Hadoop-123 > tmp.txt
+echo Hadoop-123 >> tmp.txt
+sudo passwd postgres < tmp.txt
+sudo -i -u postgres psql -d template1 -c "ALTER USER postgres WITH PASSWORD 'Hadoop-123';"
+sed -i 's/127.0.0.1/0.0.0.0/g' /var/lib/pgsql/data/pg_hba.conf
+sed -i 's/32/0/g' /var/lib/pgsql/data/pg_hba.conf
+sed -i 's/ident/password/g' /var/lib/pgsql/data/pg_hba.conf
+sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgsql/data/postgresql.conf
+systemctl restart postgresql
+sudo -i -u postgres psql -c "CREATE DATABASE cbdb;"
+sudo -i -u postgres psql -c "CREATE DATABASE uaadb;"
+sudo -i -u postgres psql -c "CREATE DATABASE periscopedb;"
+sudo -i -u postgres psql -c "CREATE USER cbadmin WITH PASSWORD 'Hadoop-123'"
+sudo -i -u postgres psql -c "grant all privileges on database cbdb to cbadmin;"
+sudo -i -u postgres psql -c "grant all privileges on database periscopedb to cbadmin;"
+sudo -i -u postgres psql -c "grant all privileges on database uaadb to cbadmin;"
+sudo -i -u postgres psql -c "\l+"
+
+echo "pgsrj.field.hortonworks.com:5432:cbdb:cbadmin:Hadoop-123" > ~/.pgpass
+echo "pgsrj.field.hortonworks.com:5432:uaadb:cbadmin:Hadoop-123" >> ~/.pgpass
+echo "pgsrj.field.hortonworks.com:5432:periscopedb:cbadmin:Hadoop-123" >> ~/.pgpass
+chmod 0600 ~/.pgpass
+# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=cbdb -w
+# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=periscopedb -w
+# psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=uaadb -w
+
+
