@@ -47,10 +47,10 @@ echo "$(hostname -f):5432:periscopedb:cbadmin:Hadoop-123" >> ~/.pgpass
 chmod 0600 ~/.pgpass
 
 echo "======== Start using Postgres with the credentials ======="
-echo "Host : $(hostname -f)"
-echo "Port : 5432"
-echo "Username : postgres"
-echo "Password : Hadoop-123"
+echo "Hostname	: $(hostname -f)"
+echo "Port num	: 5432"
+echo "Username	: postgres"
+echo "Password	: Hadoop-123"
 
 # psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=cbdb -w
 # psql --host=pgsrj.field.hortonworks.com --port=5432 --username=cbadmin --dbname=periscopedb -w
