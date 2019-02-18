@@ -38,7 +38,6 @@ sudo -i -u postgres psql -c "CREATE USER cbadmin WITH PASSWORD 'Hadoop-123'"
 sudo -i -u postgres psql -c "grant all privileges on database cbdb to cbadmin;"
 sudo -i -u postgres psql -c "grant all privileges on database periscopedb to cbadmin;"
 sudo -i -u postgres psql -c "grant all privileges on database uaadb to cbadmin;"
-sudo -i -u postgres psql -c "\l+"
 
 echo "======== Creating the passwd file for psql ==============="
 echo "$(hostname -f):5432:cbdb:cbadmin:Hadoop-123" > ~/.pgpass
@@ -53,7 +52,7 @@ echo "Username	: postgres"
 echo "Password	: Hadoop-123"
 
 echo "=========================================================="
-sudo -i -u postgres psql -c "\list" 
+sudo -i -u postgres psql -c "\list+" 
 
 
 # psql --host=$(hostname -f) --port=5432 --username=cbadmin --dbname=cbdb -w
