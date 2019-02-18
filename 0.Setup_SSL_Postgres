@@ -1,1 +1,5 @@
-sudo -i -u postgres psql -c "\list" 
+#!/usr/bin/env bash
+
+yum -y install openssl
+openssl genrsa -aes128 -passout pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key 2048
+openssl rsa -in /var/lib/pgsql/data/server.key -passin pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key
