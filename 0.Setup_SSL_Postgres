@@ -1,22 +1,28 @@
 #!/usr/bin/env bash
 
-yum -y install openssl
+echo "======= Installing openssl ========"
+yum -y -q install openssl
+
+echo "======= Generating Key ============"
 openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key 2048
 openssl rsa -in /var/lib/pgsql/data/server.key -passin pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key
-
 chmod 400 /var/lib/pgsql/data/server.key
 chown postgres.postgres /var/lib/pgsql/data/server.key
-openssl req -new -key /var/lib/pgsql/data/server.key -days 3650 -out /var/lib/pgsql/data/server.crt -x509 -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
 
+echo "======= Generating Certificate ===="
+openssl req -new -key /var/lib/pgsql/data/server.key -days 3650 -out /var/lib/pgsql/data/server.crt -x509 -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
 cp /var/lib/pgsql/data/server.crt /var/lib/pgsql/data/root.crt   
 chown postgres.postgres /var/lib/pgsql/data/root.crt  
 chown postgres.postgres /var/lib/pgsql/data/server.crt
 chmod 400 /var/lib/pgsql/data/root.crt 
 chmod 400 /var/lib/pgsql/data/server.crt
 
+echo "== Updating Postgres Config files ==="
 sed -i 's/password/md5 clientcert=1/g' /var/lib/pgsql/data/pg_hba.conf
+sed -i 's/host/hostssl/g' /var/lib/pgsql/data/pg_hba.conf
 sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
 sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'root.crt'/g" /var/lib/pgsql/data/postgresql.conf
 
+echo "== Restarting Postgres service ===="
 systemctl restart postgresql
 
