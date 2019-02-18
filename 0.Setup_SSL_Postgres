@@ -35,6 +35,8 @@ openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /tmp/pgClient.key 2048
 openssl rsa -in /tmp/pgClient.key -passin pass:P@ssw0rd123 -out /tmp/pgClient.key     
 openssl req -new -key /tmp/pgClient.key  -out /tmp/pgClient.csr -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
 openssl x509 -req -in /tmp/pgClient.csr -CA /var/lib/pgsql/data/root.crt -CAkey /var/lib/pgsql/data/server.key -out /var/www/html/pgClient.crt -CAcreateserial
+cp /var/www/html/pgClient.crt /tmp/pgClient.crt && chmod 400 /tmp/pgClient.crt
+chown postgres.postgres /tmp/pgClient.crt
 systemctl restart httpd
 
 echo "Client cert can be downloaded from :"
