@@ -26,3 +26,16 @@ sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'root.crt'/g" /var/lib/pgsql/data/post
 echo "== Restarting Postgres service ===="
 systemctl restart postgresql
 
+echo "== Generating Client Cert =========="
+yum -y -q install httpd
+systemctl start httpd
+systemctl enable httpd
+
+openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /tmp/pgClient.key 2048
+openssl rsa -in /tmp/pgClient.key -passin pass:P@ssw0rd123 -out /tmp/pgClient.key     
+openssl req -new -key /tmp/pgClient.key  -out /tmp/pgClient.csr -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
+openssl x509 -req -in /tmp/pgClient.csr -CA /var/lib/pgsql/data/root.crt -CAkey /var/lib/pgsql/data/server.key -out /var/www/html/pgClient.crt -CAcreateserial
+systemctl restart httpd
+
+echo "Client cert can be downloaded from :"
+echo "wget http://$(hostname -f)/pgClient.crt"
