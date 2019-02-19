@@ -90,11 +90,16 @@ echo "wget http://$(hostname -f)/pgClientcerts/rootCA.crt -O ~/.postgresql/root.
 echo "wget http://$(hostname -f)/pgClientcerts/client.crt -O ~/.postgresql/postgresql.crt "
 echo "wget http://$(hostname -f)/pgClientcerts/client.key -O ~/.postgresql/postgresql.key "
 echo "chmod 600 ~/.postgresql/postgresql.key "
-
+echo " "
 echo " To login to psql server, any of the following command would work"
+echo " "
 echo "psql -h $(hostname -f) -U cbadmin cbdb "
+echo " "
 echo " ( or ) "
-echo 'psql "sslmode=require sslrootcert=~/.postgresql/root.crt  host=$(hostname -f) dbname=cbdb user=postgres"'
+echo " "
+echo 'psql "sslmode=require sslrootcert=~/.postgresql/root.crt  host='"$(hostname -f)"' dbname=cbdb user=postgres"'
+echo " "
 echo " ( or ) "
-echo 'psql "sslmode=require sslrootcert=~/.postgresql/postgresql.crt host=$(hostname -f) dbname=cbdb user=postgres"'
+echo " "
+echo 'psql "sslmode=require sslrootcert=~/.postgresql/postgresql.crt host='"$(hostname -f)"' dbname=cbdb user=postgres"'
 
