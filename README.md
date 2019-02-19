@@ -1,16 +1,16 @@
 This Repository meant for Cloudbreak components related Automation:
 
 0.Install_PSQL_server
-• Install Postgres Server
-• Configure Postgres for remote login
-• creates the necessary DB and users for Cloudbreak
+  * Install Postgres Server
+  * Configure Postgres for remote login
+  * creates the necessary DB and users for Cloudbreak
 
 
 0.Setup_SSL_Postgres
-• Install OpenSSL package
-• Generate CA certificate
-• Generate Postgres server certificate to the required directories
-• Copies the server cert to the required 
+  * Install OpenSSL package
+  * Generate CA certificate
+  * Generate Postgres server certificate to the required directories 
+  * Copies the server cert to the required 
 • Update the config files of Postgres server for SSL enable
 • Generate Client certificate
 • Install Apache Web server
