@@ -31,32 +31,27 @@ chown postgres.postgres /var/lib/pgsql/data/server.key
 chmod 600 /var/lib/pgsql/data/server.key
 
 echo " updating the Postgres Server config files ===="
-listen_addresses = '*'
 
-ssl = on
-ssl_ciphers = 'HIGH:MEDIUM:*'
-ssl_renegotiation_limit = 512MB
-ssl_cert_file = 'server.crt'
-ssl_key_file = 'server.key'
-ssl_ca_file = 'rootCA.crt'
+sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_ciphers =/ssl_ciphers =/g" /var/lib/pgsql/data/postgresql.conf
+sed -i 's/#ssl_renegotiation_limit = 0/ssl_renegotiation_limit = 512MB/g' /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'rootCA.crt'/g" /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_cert_file = 'server.crt'/ssl_cert_file = 'server.crt'/g" /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_key_file = 'server.key'/ssl_key_file = 'server.key'/g" /var/lib/pgsql/data/postgresql.conf
 
 
+sed -i "s/host    all/host  all   all 127.0.0.1/32  trust/g" /var/lib/pgsql/data/pg_hba.conf
+echo "hostssl   all   all   0.0.0.0/0   trust clientcert=1/g" >> /var/lib/pgsql/data/pg_hba.conf
+
+
+
+
+
+chown postgres.postgres /var/lib/pgsql/data/server.key
+chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
+chown postgres.postgres /var/lib/pgsql/data/server.crt
 
 : '
-echo "======= Generating Key ============"
-openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key 2048
-openssl rsa -in /var/lib/pgsql/data/server.key -passin pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key
-chmod 400 /var/lib/pgsql/data/server.key
-chown postgres.postgres /var/lib/pgsql/data/server.key
-
-echo "======= Generating Certificate ===="
-openssl req -new -key /var/lib/pgsql/data/server.key -days 3650 -out /var/lib/pgsql/data/server.crt -x509 -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
-cp /var/lib/pgsql/data/server.crt /var/lib/pgsql/data/root.crt   
-chown postgres.postgres /var/lib/pgsql/data/root.crt  
-chown postgres.postgres /var/lib/pgsql/data/server.crt
-chmod 400 /var/lib/pgsql/data/root.crt 
-chmod 400 /var/lib/pgsql/data/server.crt
-
 echo "== Updating Postgres Config files ==="
 sed -i 's/password/md5 clientcert=1/g' /var/lib/pgsql/data/pg_hba.conf
 sed -i 's/host/hostssl/g' /var/lib/pgsql/data/pg_hba.conf
@@ -138,7 +133,7 @@ ssl_ca_file = 'rootCA.crt'
 ------------------------------------------
 vi /var/lib/pgsql/data/pg_hba.conf
 
-host	all	all	127.0.0.1/32	trust
+host  all   all 127.0.0.1/32  trust
 
 hostssl	all	all	0.0.0.0/0	trust clientcert=1
 
