@@ -3,6 +3,46 @@
 echo "======= Installing openssl ========"
 yum -y -q install openssl
 
+echo "======= Generating CA cert & Key =="
+
+mkdir -p /var/lib/CA
+openssl genrsa -out /var/lib/CA/rootCA.key 2048
+openssl req -x509 -new -key /var/lib/CA/rootCA.key -days 365 -out /var/lib/CA/rootCA.crt 
+
+echo "======= Generating Postgres Server cert ====="
+mkdir -p /var/lib/CA/server
+openssl genrsa -out /var/lib/CA/server/server.key 2048
+openssl req -new -key /var/lib/CA/server/server.key -out /var/lib/CA/server/server.csr -subj '/CN=$(hostname -f)'
+openssl x509 -req -in server.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out /var/lib/CA/server/server.crt -days 3650
+
+echo "======= Generating Client Cert ======"
+mkdir -p /var/lib/CA/client  
+openssl genrsa -out /var/lib/CA/client/client.key 2048
+openssl req -new -key /var/lib/CA/client/client.key -out /var/lib/CA/client/client.csr -subj '/CN=$1'
+openssl x509 -req -in /var/lib/CA/client/client.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out /var/lib/CA/client/client.crt -days 3650
+
+echo "=== copying the certificate ========="
+cp /var/lib/CA/rootCA.crt /var/lib/pgsql/data/
+cp /var/lib/CA/server/server.crt /var/lib/pgsql/data/
+cp /var/lib/CA/server/server.key /var/lib/pgsql/data/
+chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
+chown postgres.postgres /var/lib/pgsql/data/server.crt
+chown postgres.postgres /var/lib/pgsql/data/server.key 
+chmod 600 /var/lib/pgsql/data/server.key
+
+echo " updating the Postgres Server config files ===="
+listen_addresses = '*'
+
+ssl = on
+ssl_ciphers = 'HIGH:MEDIUM:*'
+ssl_renegotiation_limit = 512MB
+ssl_cert_file = 'server.crt'
+ssl_key_file = 'server.key'
+ssl_ca_file = 'rootCA.crt'
+
+
+
+: '
 echo "======= Generating Key ============"
 openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key 2048
 openssl rsa -in /var/lib/pgsql/data/server.key -passin pass:P@ssw0rd123 -out /var/lib/pgsql/data/server.key
@@ -22,6 +62,7 @@ sed -i 's/password/md5 clientcert=1/g' /var/lib/pgsql/data/pg_hba.conf
 sed -i 's/host/hostssl/g' /var/lib/pgsql/data/pg_hba.conf
 sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
 sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'root.crt'/g" /var/lib/pgsql/data/postgresql.conf
+'
 
 echo "== Restarting Postgres service ===="
 systemctl restart postgresql
