@@ -7,7 +7,10 @@ echo "======= Generating CA cert & Key =="
 
 mkdir -p /var/lib/CA
 openssl genrsa -out /var/lib/CA/rootCA.key 2048
-openssl req -x509 -new -key /var/lib/CA/rootCA.key -days 365 -out /var/lib/CA/rootCA.crt 
+openssl req -new -key /var/lib/CA/rootCA.key -out /var/lib/CA/rootCA.csr -subj '/CN=""'
+openssl req -x509 -in /var/lib/CA/rootCA.csr -key /var/lib/CA/rootCA.key -days 365 -out /var/lib/CA/rootCA.crt 
+
+#openssl req -x509 -new -key /var/lib/CA/rootCA.key -days 365 -out /var/lib/CA/rootCA.crt 
 
 echo "======= Generating Postgres Server cert ====="
 mkdir -p /var/lib/CA/server
