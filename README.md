@@ -9,8 +9,8 @@ This Repository meant for Cloudbreak components related Automation:
 0.Setup_SSL_Postgres
   * Install OpenSSL package
   * Generate CA certificate
-  * Generate Postgres server certificate to the required directories 
-  * Copies the server cert to the required 
+  * Generate Postgres server certificate signed by CA 
+  * Copies the server cert to the required directories
   * Update the config files of Postgres server for SSL enable
   * Generate Client certificate
   * Install Apache Web server 
