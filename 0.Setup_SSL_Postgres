@@ -40,7 +40,7 @@ sed -i "s/#ssl_cert_file = 'server.crt'/ssl_cert_file = 'server.crt'/g" /var/lib
 sed -i "s/#ssl_key_file = 'server.key'/ssl_key_file = 'server.key'/g" /var/lib/pgsql/data/postgresql.conf
 
 
-sed -i "s/host    all/host  all   all 127.0.0.1/32  trust/g" /var/lib/pgsql/data/pg_hba.conf
+sed -i "s/#host    all/host  all   all 127.0.0.1/32  trust/g" /var/lib/pgsql/data/pg_hba.conf
 echo "hostssl   all   all   0.0.0.0/0   trust clientcert=1/g" >> /var/lib/pgsql/data/pg_hba.conf
 
 
