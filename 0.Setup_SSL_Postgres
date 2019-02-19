@@ -96,5 +96,5 @@ echo "psql -h $(hostname -f) -U cbadmin cbdb "
 echo " ( or ) "
 echo 'psql "sslmode=require sslrootcert=~/.postgresql/root.crt  host=$(hostname -f) dbname=cbdb user=postgres"'
 echo " ( or ) "
-echo 'psql "sslmode=require sslrootcert=~/.postgresql/postgresql.crt host=$(hostname -f) dbname=cbdb user=postgres"
+echo 'psql "sslmode=require sslrootcert=~/.postgresql/postgresql.crt host=$(hostname -f) dbname=cbdb user=postgres"'
 
