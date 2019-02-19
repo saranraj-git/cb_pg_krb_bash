@@ -41,3 +41,91 @@ systemctl restart httpd
 
 echo "Client cert can be downloaded from :"
 echo "wget http://$(hostname -f)/pgClient.crt"
+
+# ========
+
+: '
+# ============
+
+mkdir -p /var/lib/CA && cd /var/lib/CA
+
+openssl genrsa -out rootCA.key 2048
+
+openssl req -x509 -new -key rootCA.key -days 365 -out rootCA.crt 
+
+# ============
+
+mkdir -p /var/lib/CA/server && cd /var/lib/CA/server
+
+openssl genrsa -out server.key 2048
+
+openssl req -new -key server.key -out server.csr -subj '/CN=pgsrj.field.hortonworks.com'
+
+openssl x509 -req -in server.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out server.crt -days 3650
+
+# ==== Client cert ====
+
+mkdir -p /var/lib/CA/client && cd /var/lib/CA/client 
+
+openssl genrsa -out client.key 2048
+
+openssl req -new -key client.key -out client.csr -subj '/CN=cbrksrj.field.hortonworks.com'
+
+openssl x509 -req -in client.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out client.crt -days 5000
+
+# ====== copying the certificate 
+
+cd /var/lib/pgsql/data/
+cp /var/lib/CA/rootCA.crt .
+cp /var/lib/CA/server/server.crt .
+cp /var/lib/CA/server/server.key .
+chmod 600 server.key
+
+# ====== Updating the config files 
+
+vim /var/lib/pgsql/data/postgresql.conf
+
+listen_addresses = '*'
+
+ssl = on
+ssl_ciphers = 'HIGH:MEDIUM:*'
+ssl_renegotiation_limit = 512MB
+ssl_cert_file = 'server.crt'
+ssl_key_file = 'server.key'
+ssl_ca_file = 'rootCA.crt'
+
+------------------------------------------
+vi /var/lib/pgsql/data/pg_hba.conf
+
+host	all	all	127.0.0.1/32	trust
+
+hostssl	all	all	0.0.0.0/0	trust clientcert=1
+
+chown postgres.postgres /var/lib/pgsql/data/server.key
+chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
+chown postgres.postgres /var/lib/pgsql/data/server.crt
+
+systemctl restart postgresql
+
+yum -y install httpd
+mkdir -p /var/www/html/pgClientcerts
+cp /var/lib/CA/client/client.crt /var/www/html/pgClientcerts/client.crt
+cp /var/lib/CA/rootCA.crt /var/www/html/pgClientcerts/rootCA.crt 
+cp /var/lib/CA/client/client.key /var/www/html/pgClientcerts/client.key
+ll /var/www/html/pgClientcerts
+systemctl restart httpd
+
+# ===== Go to ur client machine
+
+mkdir ~/.postgresql
+
+wget http://pgsrj.field.hortonworks.com/pgClientcerts/rootCA.crt -O ~/.postgresql/root.crt
+
+wget http://pgsrj.field.hortonworks.com/pgClientcerts/client.crt -O ~/.postgresql/postgresql.crt
+
+wget http://pgsrj.field.hortonworks.com/pgClientcerts/client.key -O ~/.postgresql/postgresql.key
+
+chmod 600 ~/.postgresql/postgresql.key
+
+psql -h pgsrj.field.hortonworks.com -U cbadmin cbdb
+'
