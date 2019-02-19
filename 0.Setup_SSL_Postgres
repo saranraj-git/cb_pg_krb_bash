@@ -30,7 +30,7 @@ chown postgres.postgres /var/lib/pgsql/data/server.crt
 chown postgres.postgres /var/lib/pgsql/data/server.key 
 chmod 600 /var/lib/pgsql/data/server.key
 
-echo " updating the Postgres Server config files ===="
+echo " ======== updating postgresql.conf =========="
 
 sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
 sed -i "s/#ssl_ciphers =/ssl_ciphers =/g" /var/lib/pgsql/data/postgresql.conf
@@ -39,117 +39,32 @@ sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'rootCA.crt'/g" /var/lib/pgsql/data/po
 sed -i "s/#ssl_cert_file = 'server.crt'/ssl_cert_file = 'server.crt'/g" /var/lib/pgsql/data/postgresql.conf
 sed -i "s/#ssl_key_file = 'server.key'/ssl_key_file = 'server.key'/g" /var/lib/pgsql/data/postgresql.conf
 
+echo " ======== updating pg_hba.conf =========="
+sed -i "s/host/#host/g" /var/lib/pgsql/data/pg_hba.conf
+echo "host    all     all   127.0.0.1/32    trust" >> /var/lib/pgsql/data/pg_hba.conf
+echo "hostssl   all   all   0.0.0.0/0   trust clientcert=1" >> /var/lib/pgsql/data/pg_hba.conf
 
-sed -i "s/#host    all/host  all   all 127.0.0.1/32  trust/g" /var/lib/pgsql/data/pg_hba.conf
-echo "hostssl   all   all   0.0.0.0/0   trust clientcert=1/g" >> /var/lib/pgsql/data/pg_hba.conf
-
-
-
-
-
-chown postgres.postgres /var/lib/pgsql/data/server.key
-chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
-chown postgres.postgres /var/lib/pgsql/data/server.crt
-
-: '
-echo "== Updating Postgres Config files ==="
-sed -i 's/password/md5 clientcert=1/g' /var/lib/pgsql/data/pg_hba.conf
-sed -i 's/host/hostssl/g' /var/lib/pgsql/data/pg_hba.conf
-sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
-sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'root.crt'/g" /var/lib/pgsql/data/postgresql.conf
-'
-
-echo "== Restarting Postgres service ===="
+echo " ======== Restarting Postgresql ========="
 systemctl restart postgresql
 
-echo "== Generating Client Cert =========="
-yum -y -q install httpd
-systemctl start httpd
-systemctl enable httpd
-
-openssl genrsa -des3 -passout pass:P@ssw0rd123 -out /tmp/pgClient.key 2048
-openssl rsa -in /tmp/pgClient.key -passin pass:P@ssw0rd123 -out /tmp/pgClient.key     
-openssl req -new -key /tmp/pgClient.key  -out /tmp/pgClient.csr -subj '/C=AU/ST=NSW/L=Sydney/O=myorg/CN=mysite.com/emailAddress=mail@nodomain.com'
-openssl x509 -req -in /tmp/pgClient.csr -CA /var/lib/pgsql/data/root.crt -CAkey /var/lib/pgsql/data/server.key -out /var/www/html/pgClient.crt -CAcreateserial
-cp /var/www/html/pgClient.crt /tmp/pgClient.crt && chmod 400 /tmp/pgClient.crt
-chown postgres.postgres /tmp/pgClient.crt
-systemctl restart httpd
-
-echo "Client cert can be downloaded from :"
-echo "wget http://$(hostname -f)/pgClient.crt"
-
-# ========
-
-: '
-# ============
-
-mkdir -p /var/lib/CA && cd /var/lib/CA
-
-openssl genrsa -out rootCA.key 2048
-
-openssl req -x509 -new -key rootCA.key -days 365 -out rootCA.crt 
-
-# ============
-
-mkdir -p /var/lib/CA/server && cd /var/lib/CA/server
-
-openssl genrsa -out server.key 2048
-
-openssl req -new -key server.key -out server.csr -subj '/CN=pgsrj.field.hortonworks.com'
-
-openssl x509 -req -in server.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out server.crt -days 3650
-
-# ==== Client cert ====
-
-mkdir -p /var/lib/CA/client && cd /var/lib/CA/client 
-
-openssl genrsa -out client.key 2048
-
-openssl req -new -key client.key -out client.csr -subj '/CN=cbrksrj.field.hortonworks.com'
-
-openssl x509 -req -in client.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out client.crt -days 5000
-
-# ====== copying the certificate 
-
-cd /var/lib/pgsql/data/
-cp /var/lib/CA/rootCA.crt .
-cp /var/lib/CA/server/server.crt .
-cp /var/lib/CA/server/server.key .
-chmod 600 server.key
-
-# ====== Updating the config files 
-
-vim /var/lib/pgsql/data/postgresql.conf
-
-listen_addresses = '*'
-
-ssl = on
-ssl_ciphers = 'HIGH:MEDIUM:*'
-ssl_renegotiation_limit = 512MB
-ssl_cert_file = 'server.crt'
-ssl_key_file = 'server.key'
-ssl_ca_file = 'rootCA.crt'
-
-------------------------------------------
-vi /var/lib/pgsql/data/pg_hba.conf
-
-host  all   all 127.0.0.1/32  trust
-
-hostssl	all	all	0.0.0.0/0	trust clientcert=1
-
-chown postgres.postgres /var/lib/pgsql/data/server.key
-chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
-chown postgres.postgres /var/lib/pgsql/data/server.crt
-
-systemctl restart postgresql
-
+echo " ======== Installing Apache ========="
 yum -y install httpd
+
+echo " ======== Exporting Client certificates ===="
 mkdir -p /var/www/html/pgClientcerts
 cp /var/lib/CA/client/client.crt /var/www/html/pgClientcerts/client.crt
 cp /var/lib/CA/rootCA.crt /var/www/html/pgClientcerts/rootCA.crt 
 cp /var/lib/CA/client/client.key /var/www/html/pgClientcerts/client.key
 ll /var/www/html/pgClientcerts
+
+echo " ======= Starting Apache ======"
+systemctl enable httpd
 systemctl restart httpd
+
+echo " Download the client cert on this link"
+echo " http://$(hostname -f)/pgClientcerts/client.crt"
+echo " http://$(hostname -f)/pgClientcerts/rootCA.crt"
+echo " http://$(hostname -f)/pgClientcerts/client.key"
 
 # ===== Go to ur client machine
 
