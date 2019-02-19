@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 
+: '
+This script helps in enabling the SSL for Postgres server and it needs to be executed on Postgres Instance
+
+If postgres is not installed then make use of this script
+https://raw.githubusercontent.com/svenugopal333/cb_az_prod/master/0.Install_PSQL_server
+
+This script performs the following function:
+1. Install Openssl package
+2. Generate CA certificate
+3. Generate Postgres server certificate to the required directories
+4. Copies the server cert to the required 
+5. update the config files of Postgres server for SSL enable
+6. Generate Client certificate
+7. Install Apache Web server
+8. Copies the Client certificate to the Web server directory
+
+'
 echo "======= Installing openssl ========"
 yum -y -q install openssl
 
@@ -64,23 +81,20 @@ echo " ======= Starting Apache ======"
 systemctl enable httpd
 systemctl restart httpd
 
-echo " Download the client cert on this link"
-echo " http://$(hostname -f)/pgClientcerts/client.crt"
-echo " http://$(hostname -f)/pgClientcerts/rootCA.crt"
-echo " http://$(hostname -f)/pgClientcerts/client.key"
+echo " ====== Postgres server - SSL Enabled Successfully ====== "
 
-# ===== Go to ur client machine
-: '
-mkdir ~/.postgresql
+echo " Run the following commands on the client machine to start using PSQL"
+echo " ===================================================================="
+echo "mkdir ~/.postgresql"
+echo "wget http://$(hostname -f)/pgClientcerts/rootCA.crt -O ~/.postgresql/root.crt "
+echo "wget http://$(hostname -f)/pgClientcerts/client.crt -O ~/.postgresql/postgresql.crt "
+echo "wget http://$(hostname -f)/pgClientcerts/client.key -O ~/.postgresql/postgresql.key "
+echo "chmod 600 ~/.postgresql/postgresql.key "
 
-wget http://pgsrj.field.hortonworks.com/pgClientcerts/rootCA.crt -O ~/.postgresql/root.crt
+echo " To login to psql server, any of the following command would work"
+echo "psql -h $(hostname -f) -U cbadmin cbdb "
+echo " ( or ) "
+echo 'psql "sslmode=require sslrootcert=~/.postgresql/root.crt  host=$(hostname -f) dbname=cbdb user=postgres"'
+echo " ( or ) "
+echo 'psql "sslmode=require sslrootcert=~/.postgresql/postgresql.crt host=$(hostname -f) dbname=cbdb user=postgres"
 
-wget http://pgsrj.field.hortonworks.com/pgClientcerts/client.crt -O ~/.postgresql/postgresql.crt
-
-wget http://pgsrj.field.hortonworks.com/pgClientcerts/client.key -O ~/.postgresql/postgresql.key
-
-chmod 600 ~/.postgresql/postgresql.key
-
-psql -h pgsrj.field.hortonworks.com -U cbadmin cbdb
-
-'
