@@ -13,12 +13,12 @@ echo "======= Generating Postgres Server cert ====="
 mkdir -p /var/lib/CA/server
 openssl genrsa -out /var/lib/CA/server/server.key 2048
 openssl req -new -key /var/lib/CA/server/server.key -out /var/lib/CA/server/server.csr -subj '/CN=$(hostname -f)'
-openssl x509 -req -in server.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out /var/lib/CA/server/server.crt -days 3650
+openssl x509 -req -in /var/lib/CA/server/server.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out /var/lib/CA/server/server.crt -days 3650
 
 echo "======= Generating Client Cert ======"
 mkdir -p /var/lib/CA/client  
 openssl genrsa -out /var/lib/CA/client/client.key 2048
-openssl req -new -key /var/lib/CA/client/client.key -out /var/lib/CA/client/client.csr -subj '/CN=$1'
+openssl req -new -key /var/lib/CA/client/client.key -out /var/lib/CA/client/client.csr -subj '/CN=somemachine'
 openssl x509 -req -in /var/lib/CA/client/client.csr -CA /var/lib/CA/rootCA.crt -CAkey /var/lib/CA/rootCA.key -CAcreateserial -out /var/lib/CA/client/client.crt -days 3650
 
 echo "=== copying the certificate ========="
@@ -48,7 +48,7 @@ echo " ======== Restarting Postgresql ========="
 systemctl restart postgresql
 
 echo " ======== Installing Apache ========="
-yum -y install httpd
+yum -y -q install httpd
 
 echo " ======== Exporting Client certificates ===="
 mkdir -p /var/www/html/pgClientcerts
@@ -67,7 +67,7 @@ echo " http://$(hostname -f)/pgClientcerts/rootCA.crt"
 echo " http://$(hostname -f)/pgClientcerts/client.key"
 
 # ===== Go to ur client machine
-
+: '
 mkdir ~/.postgresql
 
 wget http://pgsrj.field.hortonworks.com/pgClientcerts/rootCA.crt -O ~/.postgresql/root.crt
@@ -79,4 +79,5 @@ wget http://pgsrj.field.hortonworks.com/pgClientcerts/client.key -O ~/.postgresq
 chmod 600 ~/.postgresql/postgresql.key
 
 psql -h pgsrj.field.hortonworks.com -U cbadmin cbdb
+
 '
