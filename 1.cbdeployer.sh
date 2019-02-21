@@ -54,7 +54,7 @@ cat >> Profile << END
 export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
 export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
-export PUBLIC_IP=13.66.173.188
+export PUBLIC_IP=$IP
 END
 rm *.yml
 
