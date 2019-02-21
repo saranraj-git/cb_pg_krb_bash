@@ -8,6 +8,8 @@ Components required:
 2. Cloudbreak WebUI along with their credentials
 3. Ambari Blueprint for HDP and HDF clusters
 4. Azure ARM template file for provisioning the servers
+5. Image catalog for the Instances being provisioned by cloudbreak
+
 '
 cburl="https://52.237.208.167"
 cbuser="cbadmin@example.com "
@@ -24,6 +26,10 @@ cb blueprint create from-url --url https://raw.githubusercontent.com/svenugopal3
 
 echo " ==== Getting the ARM template from the repository ==== "
 wget https://raw.githubusercontent.com/svenugopal333/cb_az_prod/master/ARM_Template.json -O /var/lib/template.json 
+
+echo " ==== Adding Image catalog to Cloudbreak ===== "
+cb imagecatalog create --url https://raw.githubusercontent.com/svenugopal333/cb_az_prod/master/ImageCatalog.json --name baseimage
+cb imagecatalog set-default --name baseimage
 
 echo " ==== Launching the cluster through Cloudbreak Cmd line === "
 cb cluster create --cli-input-json /var/lib/template.json --name testclus1
