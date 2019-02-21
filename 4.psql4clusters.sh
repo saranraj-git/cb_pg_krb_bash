@@ -1,28 +1,23 @@
 #!/usr/bin/env bash
 
 : '
-Create database for  Ambari, Druid, Hive, Oozie, Ranger, Registry, Superset
+
+This script helps in integrating the Postgres databases (for HDP/HDF clusters) to Cloudbreak:
+
+It requires the following as input:
+
+1. Postgres DB server FQDN
+2. DB 
+
+'
 pgserver=" "
-pghivedbname=" "
 pgusername=" "
 pgpwd=" "
 
-'
-# Installing the Postgres Client
-sudo yum install -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-redhat10-10-2.noarch.rpm  
-sudo yum install -y postgresql10 
 
-
-sudo -i -u postgres psql -c 'CREATE DATABASE ambari'
-sudo -i -u postgres psql -c 'CREATE DATABASE druid'
-sudo -i -u postgres psql -c 'CREATE DATABASE hive'
-sudo -i -u postgres psql -c 'CREATE DATABASE oozie'
-sudo -i -u postgres psql -c 'CREATE DATABASE ranger'
-sudo -i -u postgres psql -c 'CREATE DATABASE registry'
-sudo -i -u postgres psql -c 'CREATE DATABASE superset'
-
-
+cb configure --server https://52.237.208.167 --username cbadmin@example.com --password "Hadoop-123"
+cb database create postgres --name myambari --type AMBARI --url jdbc:postgresql://cbpostgres.postgres.database.azure.com:5432/ambari?ssl=true  --db-username cbpsqladmin@cbpostgres --db-password Hadoop-123
+cb database create postgres --name myhive --type HIVE --url jdbc:postgresql://cbpostgres.postgres.database.azure.com:5432/hive?ssl=true  --db-username cbpsqladmin@cbpostgres --db-password Hadoop-123
+cb database create postgres --name myranger --type RANGER --url jdbc:postgresql://cbpostgres.postgres.database.azure.com:5432/rangerdb?ssl=true  --db-username cbpsqladmin@cbpostgres --db-password Hadoop-123
 cb database create postgres --name hive  --type HIVE --url jdbc:postgresql://testsrj.field.hortonworks.com:5432/hive?ssl=true --db-username cbadmin --db-password Hadoop-123
-
-
 cb database create postgres --name hive --type HIVE --url jdbc:postgresql://$pgserver:5432/$pghivedbname?ssl=true --db-username $pgusername --db-password $pgpwd
