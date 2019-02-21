@@ -41,7 +41,8 @@ systemctl status docker
 
 echo "###################################"
 echo "Installing Cloudbreak"
-wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && chmod +x ./jq && cp jq /usr/bin
+yum install epel-release -y
+yum install jq -y
 curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd
 
 echo "###################################"
