@@ -20,10 +20,10 @@ echo " ==== Configuring Cloudbreak ===="
 cb configure --server $cburl --username $cbuser --password $cbpasswd
 
 echo " ==== Adding Ambari Blueprint to Cloudbreak ===="
-
+cb blueprint create from-url --url https://raw.githubusercontent.com/svenugopal333/cb_az_prod/master/hdp31-data-science-spark2-v5.bp --name hdp31-data-science-spark2-v5
 
 echo " ==== Getting the ARM template from the repository ==== "
-wget -O /var/lib/template.json 
+wget https://raw.githubusercontent.com/svenugopal333/cb_az_prod/master/ARM_Template.json -O /var/lib/template.json 
 
 echo " ==== Launching the cluster through Cloudbreak Cmd line === "
-cb cluster create --cli-input-json /var/lib/template.json --name cli-cluster
+cb cluster create --cli-input-json /var/lib/template.json --name testclus1
