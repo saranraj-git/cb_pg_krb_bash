@@ -16,7 +16,7 @@ Components required:
 5. Image catalog for the Instances being provisioned by cloudbreak
 
 '
-cburl="https://52.237.208.167"
+cburl="https://13.66.173.188"
 cbuser="cbadmin@example.com "
 cbpasswd="Hadoop-123"
 
