@@ -1,0 +1,151 @@
+{
+  "inputs": {},
+  "general": {
+    "credentialName": "azcred",
+    "name": "testclus1"
+  },
+  "placement": {
+    "region": "Australia East"
+  },
+  "tags": {
+    "userDefinedTags": {}
+  },
+  "cluster": {
+    "ambari": {
+      "blueprintName": "srj1",
+      "platformVersion": "HDP 3.1",
+      "gateway": {
+        "enableGateway": true,
+        "topologies": [
+          {
+            "topologyName": "dp-proxy",
+            "exposedServices": [
+              "ALL"
+            ]
+          }
+        ],
+        "ssoType": "NONE"
+      },
+      "userName": "admin",
+      "password": "Hadoop-123",
+      "validateBlueprint": false,
+      "ambariSecurityMasterKey": "",
+      "enableSecurity": false
+    }
+  },
+  "instanceGroups": [
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "testclus1-master-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master",
+      "type": "GATEWAY",
+      "recoveryMode": "MANUAL",
+      "securityGroup": {
+        "securityRules": [
+          {
+            "subnet": "0.0.0.0/0",
+            "ports": "9443",
+            "protocol": "tcp"
+          },
+          {
+            "subnet": "0.0.0.0/0",
+            "ports": "22",
+            "protocol": "tcp"
+          },
+          {
+            "subnet": "0.0.0.0/0",
+            "protocol": "tcp",
+            "ports": "8443"
+          }
+        ]
+      }
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "testclus1-worker-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "worker",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "securityGroup": {
+        "securityRules": [
+          {
+            "subnet": "0.0.0.0/0",
+            "protocol": "tcp",
+            "ports": "22"
+          }
+        ]
+      }
+    },
+    {
+      "parameters": {},
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 0,
+      "group": "compute",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "securityGroup": {
+        "securityRules": [
+          {
+            "subnet": "0.0.0.0/0",
+            "protocol": "tcp",
+            "ports": "22"
+          }
+        ]
+      }
+    }
+  ],
+  "network": {
+    "parameters": {
+      "noPublicIp": false,
+      "noFirewallRules": false
+    },
+    "subnetCIDR": "10.0.0.0/16"
+  },
+  "stackAuthentication": {
+    "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC+oNKRPW43D1mGM+ay3fQDWn9uYoaZ+m2DCJ7k7VytdjLM8yZtLgcN42PfnY/9IpFVeQW62Ro5CzDLWwvd723scKQjiCBWia2MPsT0NHw/jdRyQx0FsDacZHF1yZOnslcolAWkfRC1PAe04sQNLPkwOlxTiNdG7Vp5X8NRzQThQWUmML10gbZ3K9Rc5DHUfygROvFbkUEZ2FDc3+0KBUJCds2ZJ6zIkfg5pRRTVj1aRSZtUuxa8rA1q9J/Oe73w9FuoJ5VmA0May4jP5QH1yAz86rogqsbHs4+/xyLRewOi1iwHTraX6NKBH2ycRaMK8qlVScetu/NosUClEtUKUvzIm5UPbGf1LcYsIp8PCFTaziG4tr2HRmWfXprPl+10jBxZNW2nt2+Y0RFbqztJ7GVW3ShufiWYaLyj7EZUPb27Zj7PX0kbPD9eDM6za9nDkR20dC9spvBhek9m+GbsKJu20I9F61P3An5zdLx2jxk5DMYk+mTaKdf6xjyeh0u0jdaKSKXanPchqhuVJXY0ww+8iyvHf/E7QszUTmd+NGlj5aBHfUKIEf/wq5hZ+6XT7FAb/M28ulHwveWB+5l77A0vqqJCF7isfzYI5xLVWE/HjXtE8OcvVOgpqZ6EFVX+PdMQFN6RIFdkMjpSpN5bRjVNTVRluSfw/VP3UyVSgwEMw== svenugopal@hortonworks.com"
+  },
+  "parameters": {
+    "encryptStorage": true
+  }
+}
