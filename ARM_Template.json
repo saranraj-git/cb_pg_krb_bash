@@ -5,7 +5,7 @@
     "name": "testclus1"
   },
   "placement": {
-    "region": "Australia East"
+    "region": "West US"
   },
   "tags": {
     "userDefinedTags": {}
