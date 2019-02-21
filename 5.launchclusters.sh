@@ -34,5 +34,10 @@ cb imagecatalog set-default --name baseimage
 echo " ==== Launching the cluster through Cloudbreak Cmd line === "
 cb cluster create --cli-input-json /var/lib/template.json --name testclus1
 
+echo " ==== Checking the cluster status === "
+cb cluster describe --name testclus1  | grep status
+
+echo " ==== Getting the Ambari URL ===="
+cb cluster describe --name testclus1 | grep ambariServerUrl
 
 
