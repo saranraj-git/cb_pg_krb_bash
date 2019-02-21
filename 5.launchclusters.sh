@@ -3,6 +3,11 @@
 
 This script helps in launching the HDP/HDF clusters through cloudbreak
 
+Pre-requisites:
+Cloudbreak UI need to be up and running fine
+Cloudbreak must have Azure Credentials added (Azure App Key) with the contributor role
+Cloudbreak must have necessary databases for HDP/HDF components
+
 Components required:
 1. Cloudbreak Instance details
 2. Cloudbreak WebUI along with their credentials
