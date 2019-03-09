@@ -19,10 +19,11 @@ systemctl start docker
 systemctl enable docker
 yum install yum-utils -y -q
 yum-config-manager --enable rhui-REGION-rhel-server-extras
-sed -i 's/journald/json-file/g'  /etc/sysconfig/docker
+
 
 echo "###################################"
 echo "Configuring docker"
+sed -i 's/journald/json-file/g'  /etc/sysconfig/docker
 cat /etc/sysconfig/docker | grep "log-driver"
 systemctl restart docker
 systemctl status docker
@@ -53,8 +54,10 @@ cd /var/lib/cloudbreak-deployment && cbd generate
 echo "###################################"
 echo "Downloading Cloudbreak docker images"
 cd /var/lib/cloudbreak-deployment && cbd pull-parallel  
-cd /var/lib/cloudbreak-deployment && for img in `grep "image:" docker-compose.yml | sed 's/image: //g'`; do [ ! -z $(docker images -q $img) ] || echo "$img" ; done
+#cd /var/lib/cloudbreak-deployment && for img in `grep "image:" docker-compose.yml | sed 's/image: //g'`; do [ ! -z $(docker images -q $img) ] || echo "$img" ; done
 
+echo "###################################"
+echo "Extracting Docker Images"
 pushd /tmp/
 docker save traefik:v1.6.6-alpine > traefikv1.6.6-alpine.tar
 docker save hortonworks/haveged:1.1.0 >  hortonworks_haveged:1.1.0.tar
@@ -71,9 +74,10 @@ docker save hortonworks/cloudbreak:2.9.0 > hortonworks_cloudbreak:2.9.0.tar
 docker save hortonworks/hdc-auth:2.9.0 > hortonworks_hdc-auth:2.9.0.tar
 docker save hortonworks/hdc-web:2.9.0 > hortonworks_hdc-web:2.9.0.tar
 docker save hortonworks/cloudbreak-autoscale:2.9.0 > hortonworks_cloudbreak-autoscale:2.9.0.tar
-
 tar -czf alldock.tar.gz traefikv1.6.6-alpine.tar hortonworks_haveged:1.1.0.tar gliderlabs_consul-server:0.5.tar gliderlabs_registrator:v7.tar hortonworks_socat:1.0.0.tar hortonworks_logspout:v3.2.2.tar hortonworks_logrotate:1.0.1.tar catatnight_postfix:latest.tar hortonworks_cbd-smartsense:0.13.4.tar postgres:9.6.1-alpine.tar hortonworks_cloudbreak-uaa:3.6.5-pgupdate.tar hortonworks_cloudbreak:2.9.0.tar hortonworks_hdc-auth:2.9.0.tar hortonworks_hdc-web:2.9.0.tar hortonworks_cloudbreak-autoscale:2.9.0.tar 
 
+echo "###################################"
+echo "Archiving the dependency files"
 pushd /var/lib/cloudbreak-deployment
 tar -czf cbbin.tar.gz .
 cp cbbin.tar.gz /tmp/
@@ -81,8 +85,12 @@ cp /bin/cbd /tmp/
 pushd /tmp/
 tar -czf mastercb.tar.gz cbbin.tar.gz alldock.tar.gz cbd
 ll -h mastercb.tar.gz
-mkdir /var/www/html/cb
+
+echo "###################################"
+echo "Moving the Master CB Archive file to HTTPD"
+mkdir -p /var/www/html/cb
 cp mastercb.tar.gz /var/www/html/cb/
 systemctl enable httpd && systemctl restart httpd
+
 echo "=== Download Cloudbreak Binaries here ===="
 echo "http://$IP/cb/mastercb.tar.gz"
