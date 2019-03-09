@@ -38,6 +38,7 @@ wget http://172.26.253.50/cb/mastercb.tar.gz -O /tmp/mastercb.tar.gz
 tar -xzf /tmp/mastercb.tar.gz -C /tmp/
 tar -xzf /tmp/alldock.tar.gz -C /tmp/
 
+
 echo "###################################"
 echo "Loading Docker Images"
 docker load < /tmp/traefikv1.6.6-alpine.tar
@@ -60,6 +61,7 @@ echo "###################################"
 echo "Extracting Cloudbreak binaries & dependencies"
 tar -xzf /tmp/cbbin.tar.gz -C /var/lib/cloudbreak-deployment/
 cp /tmp/cbd /bin/ && chmod +x /bin/cbd
+cp /tmp/cb /bin/ && chmod +x /bin/cb
 rm -f /var/lib/cloudbreak-deployment/Profile
 rm -f /var/lib/cloudbreak-deployment/*.yml
 
