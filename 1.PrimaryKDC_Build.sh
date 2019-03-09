@@ -1,9 +1,9 @@
 #!/bin/env bash
 echo "Deploying the packages"
-yum -y install krb5-server krb5-libs krb5-workstation
+yum -y install krb5-server krb5-libs krb5-workstation httpd
 
 echo "Updating KRB5.config file"
-export DOMAIN=$(hostname -d)
+#export DOMAIN=$(hostname -d)
 export REALMUPPER="TESTDDEP.COM"
 # $(echo ${DOMAIN} | awk '{print toupper($0)}')
 export REALMLOWER="testddep.com"
@@ -38,3 +38,29 @@ systemctl restart kadmin
 
 echo "List of user principals as follows"
 kadmin.local -q "listprincs"
+
+#==== Run the following on the master KDC========="
+
+PrimaryKDC="srjkdc-1.field.hortonworks.com"
+SecondaryKDC="srjkdc-2.field.hortonworks.com"
+KDCrealmname="TESTDDEP.COM"
+
+echo "Create new service principals for the primary and secondary KDC host"
+kadmin.local -q "addprinc -randkey host/$PrimaryKDC" 
+kadmin.local -q "addprinc -randkey host/$SecondaryKDC" 
+
+echo "Generate a random key for the master KDC & secondary KDC "
+kadmin.local -q "ktadd host/$PrimaryKDC" 
+kadmin.local -q "ktadd -k /tmp/$SecondaryKDC.keytab host/$SecondaryKDC"
+
+echo "Copying the files from Primary to secondary"
+cp /var/kerberos/krb5kdc/kdc.conf /tmp/
+cp /etc/krb5.conf /tmp/
+cp /var/kerberos/krb5kdc/.k5.* /tmp/
+cp /var/kerberos/krb5kdc/kadm5.acl /tmp/
+
+pushd /tmp/
+tar -czf kdc1.tar.gz $SecondaryKDC.keytab kdc.conf krb5.conf kadm5.acl .k5.*
+cp kdc1.tar.gz /var/www/html/
+systemctl restart httpd && systemctl enable httpd
+
