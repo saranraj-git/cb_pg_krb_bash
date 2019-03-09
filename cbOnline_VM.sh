@@ -39,7 +39,7 @@ echo "$(cbd --version)"
 echo "Creating Profile file for Cloudbreak"
 mkdir -p /var/lib/cloudbreak-deployment && cd /var/lib/cloudbreak-deployment
 export IP=$(ip add | grep 'state UP' -A2 | head -n3 |awk '{print $2}' | cut -f1 -d'/' | tail -n1)
-cat >> Profile << END
+cat >> /var/lib/cloudbreak-deployment/Profile << END
 export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
 export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
@@ -89,7 +89,7 @@ ll -h mastercb.tar.gz
 echo "###################################"
 echo "Moving the Master CB Archive file to HTTPD"
 mkdir -p /var/www/html/cb
-cp mastercb.tar.gz /var/www/html/cb/
+cp /tmp/mastercb.tar.gz /var/www/html/cb/
 systemctl enable httpd && systemctl restart httpd
 
 echo "=== Download Cloudbreak Binaries here ===="
