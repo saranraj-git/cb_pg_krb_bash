@@ -73,6 +73,7 @@ export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
 export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
 export PUBLIC_IP=$IP
+export CB_AUDIT_FILE_ENABLED=true
 END
 cd /var/lib/cloudbreak-deployment/ && cbd generate
 echo "cd /var/lib/cloudbreak-deployment && cbd kill && cbd start" >> /etc/rc.d/rc.local && chmod +x /etc/rc.d/rc.local
