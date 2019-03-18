@@ -55,6 +55,7 @@ export UAA_DEFAULT_SECRET=Hadoop-123
 export UAA_DEFAULT_USER_PW=Hadoop-123
 export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
 export PUBLIC_IP=$IP
+export CB_AUDIT_FILE_ENABLED=true
 END
 rm *.yml
 
