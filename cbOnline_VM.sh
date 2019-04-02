@@ -1,4 +1,4 @@
-#/bin/env bash
+#!/bin/env bash
 echo "###################################"
 echo "Installing Pre-requisites"
 yum -y install net-tools ntp wget lsof unzip tar iptables-services httpd
