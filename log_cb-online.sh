@@ -101,7 +101,7 @@ install_prereq()
         systemctl restart docker && add_log "Restarting Docker service"
     fi
 }
-install_prereq
+
 
 install_cb()
 {
@@ -176,4 +176,5 @@ systemctl enable httpd && systemctl restart httpd
 
 }
 
-
+install_prereq
+install_cb
