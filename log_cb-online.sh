@@ -151,7 +151,9 @@ if [[ $(rm /var/lib/cloudbreak-deployment/*.yml) -eq 0 ]]; then add_log "Cleanup
 cd /var/lib/cloudbreak-deployment && cbd generate && add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
 add_log "Downloading Docker images"
 cd /var/lib/cloudbreak-deployment && cbd pull-parallel && add_log "Docker images download completed"
-
+rm -f /tmp/*.tar 2> /dev/null
+rm -f /tmp/*.tar.gz 2> /dev/null
+rm -f /var/www/html/cb/*.* 2> /dev/null
 if [[ $(cd /tmp/ && docker save traefik:v1.6.6-alpine > traefikv1.6.6-alpine.tar) -eq 0 ]]; then add_log "Docker image 1 : traefik saved"; else exit_script "error downloading Traefik";fi
 if [[ $(cd /tmp/ && docker save hortonworks/haveged:1.1.0 >  hortonworks_haveged:1.1.0.tar) -eq 0 ]]; then add_log "Docker image 2 : hortonworks_haveged saved"; else exit_script "error downloading hortonworks_haveged";fi
 if [[ $(cd /tmp/ && docker save gliderlabs/consul-server:0.5 > gliderlabs_consul-server:0.5.tar) -eq 0 ]]; then add_log "Docker image 3 : gliderlabs_consul saved"; else exit_script "error downloading gliderlabs_consul";fi
@@ -183,17 +185,19 @@ make_dep()
     pushd /tmp/
     add_log "Archiving dependencies with docker tar file ...."
     if [[ $(tar -czf mastercb.tar.gz cbbin.tar.gz alldock.tar.gz cbd cb) -eq 0 ]];then add_log "Archiving dependencies with docker files successfull"; else exit_script "Failed to Archive dependencies with docker files"; fi
-    mkdir -p /var/www/html/cb
+    if [[ $(mkdir -p /var/www/html/cb) -eq 0 ]];then add_log "Created Dir : /var/www/html/cb "; else exit_script "Unable to create /var/www/html/cb"; fi
+    add_log "Copying mastercb.tar.gz to httpd ...."
+    if [[ $(cp /tmp/mastercb.tar.gz /var/www/html/cb/ -f) -eq 0 ]]; then add_log "Copied to httpd successfully"; else exit_script "Failed to copy Master Tar file to httpd"; fi
     add_log "Validating the file size of Master Tar file"
     if [[ $(du -h /var/www/html/cb/mastercb.tar.gz | cut -f1) == "2.0G" ]]; then add_log "File Size of mastercb.tar.gz is 2.0GB so proceeding"; else exit_script "TAR ball file contains lesser files than expected";fi
     echo $(cksum /var/www/html/cb/mastercb.tar.gz | cut -f1 -d" ") > /var/www/html/cb/checksum.md5
-    add_log "Copying mastercb.tar.gz to httpd ...."
-    if [[ $(cp /tmp/mastercb.tar.gz /var/www/html/cb/ -f) -eq 0 ]]; then add_log "Copied to httpd successfully"; else exit_script "Failed to copy Master Tar file to httpd"; fi
     add_log "restarting httpd..."
     if [[ $(systemctl enable httpd && systemctl restart httpd) -eq 0 ]]; then add_log "Restarted HTTPD successfully"; else exit_script "ERROR Restarting HTTPD"; fi
-    add_log "Cloudbreak Tar ball avail at http://$(hostname -f)/cb/mastercb.tar.gz"
+    add_log "Cloudbreak Tar file avail at http://$(hostname -f)/cb/mastercb.tar.gz"
+    add_log "Script Execution completed Successfully"
 }
 
 install_prereq
 make_cb
 make_dep
+
