@@ -70,12 +70,12 @@ install_prereq()
         [[ $(getenforce) ]] && add_log "Now SE Linux set to disabled"
     fi
 
-    if [[ $(yum install -y yum-utils docker-1.13.1-75.git8633870.el7.centos.x86_64 docker-client-1.13.1-75.git8633870.el7.centos.x86_64 docker-common-1.13.1-75.git8633870.el7.centos.x86_64) ]]; then
+    if [[ $(yum install -y yum-utils docker*1.13.*75* docker-client-1.13*75* docker-common-1.13*75*) ]]; then
         add_log "Installing Docker 1.13 and yum utils"
         add_log "Installed - $(rpm -qa | grep docker-1.13*)"
         add_log "Installed - $(rpm -qa | grep yum-utils)"
     else
-        exit_script "Docker install or yum utils failed"
+        exit_script "Docker 1.13.75 install failed or package not avail"
     fi
     
     if [[ $(systemctl is-enabled docker) == "enabled" ]]; then 
