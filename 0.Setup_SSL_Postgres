@@ -49,6 +49,8 @@ chown postgres.postgres /var/lib/pgsql/data/rootCA.crt
 chown postgres.postgres /var/lib/pgsql/data/server.crt
 chown postgres.postgres /var/lib/pgsql/data/server.key 
 chmod 600 /var/lib/pgsql/data/server.key
+chmod 600 /var/lib/pgsql/data/server.crt
+chmod 600 /var/lib/pgsql/data/rootCA.crt
 
 echo " ======== updating postgresql.conf =========="
 
