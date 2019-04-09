@@ -52,17 +52,17 @@ chmod 600 /var/lib/pgsql/data/server.key
 
 echo " ======== updating postgresql.conf =========="
 
-sed -i 's/#ssl = off/ssl = on/g' /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl = off/ssl = 'on'/g" /var/lib/pgsql/data/postgresql.conf
 sed -i "s/#ssl_ciphers =/ssl_ciphers =/g" /var/lib/pgsql/data/postgresql.conf
 sed -i 's/#ssl_renegotiation_limit = 0/ssl_renegotiation_limit = 512MB/g' /var/lib/pgsql/data/postgresql.conf
-sed -i "s/#ssl_ca_file = ''/ssl_ca_file = 'rootCA.crt'/g" /var/lib/pgsql/data/postgresql.conf
-sed -i "s/#ssl_cert_file = 'server.crt'/ssl_cert_file = 'server.crt'/g" /var/lib/pgsql/data/postgresql.conf
-sed -i "s/#ssl_key_file = 'server.key'/ssl_key_file = 'server.key'/g" /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_ca_file = ''/ssl_ca_file = '/var/lib/pgsql/data/rootCA.crt'/g" /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_cert_file = 'server.crt'/ssl_cert_file = '/var/lib/pgsql/data/server.crt'/g" /var/lib/pgsql/data/postgresql.conf
+sed -i "s/#ssl_key_file = 'server.key'/ssl_key_file = '/var/lib/pgsql/data/server.key'/g" /var/lib/pgsql/data/postgresql.conf
 
 echo " ======== updating pg_hba.conf =========="
 sed -i "s/host/#host/g" /var/lib/pgsql/data/pg_hba.conf
 echo "host    all     all   127.0.0.1/32    trust" >> /var/lib/pgsql/data/pg_hba.conf
-echo "hostssl   all   all   0.0.0.0/0   trust clientcert=1" >> /var/lib/pgsql/data/pg_hba.conf
+echo "hostssl   all   all   0.0.0.0/0   md5   clientcert=1" >> /var/lib/pgsql/data/pg_hba.conf
 
 echo " ======== Restarting Postgresql ========="
 systemctl restart postgresql
