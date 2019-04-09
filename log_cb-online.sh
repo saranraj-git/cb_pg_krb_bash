@@ -75,7 +75,7 @@ install_prereq()
         add_log "Installed - $(rpm -qa | grep docker-1.13*)"
         add_log "Installed - $(rpm -qa | grep yum-utils)"
     else
-        exit_script "Docker 1.13.75 install failed or package not avail"
+        exit_script "Docker install or yum utils failed"
     fi
     
     if [[ $(systemctl is-enabled docker) == "enabled" ]]; then 
@@ -97,7 +97,7 @@ install_prereq()
     else
         sed -i 's/journald/json-file/g'  /etc/sysconfig/docker && add_log "Changing docker config to JSON-file"
         add_log "Validating docker config again"
-        if [[ $(cat /etc/sysconfig/docker | grep "log-driver" | cut -f2 -d" " | cut -f2 -d"=") == "json-file" ]]; then add_log "Docker configured to JSON File"; fi
+        if [[ $(cat /etc/sysconfig/docker | grep "log-driver" | cut -f2 -d" " | cut -f2 -d"=") == "json-file" ]]; then add_log "Docker configured to JSON File"; else exit_script "Unable to validate Docker config file"; fi
         systemctl restart docker && add_log "Restarting Docker service"
     fi
 }
@@ -105,24 +105,26 @@ install_prereq()
 
 make_cb()
 {
-if [[ "$(yum -y install epel-release)" ]]; then
+wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -O /tmp/epel.rpm
+rpm -i /tmp/epel.rpm
+
+if [[ "$(yum -y install epel-release jq)" ]]; then
     add_log "Installed - $(rpm -qa | grep epel-release)"
-elif [[ $(yum -y install epel-release jq) == 1 ]]; then
-    add_log "Epel release Already installed"
+    add_log "Installed - $(rpm -qa | grep jq)"
 else
-    add_log "Installation Error or Package not avail for JQ and EPEL Release $?"
+    exit_script "Installation Error or Package not avail for JQ and EPEL Release $?"
 fi
 
 if [[ $(curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd) -eq 0 ]]; then
     add_log "CBD file downloaded and stored in /bin/"
 else
-    add_log "Error Downloading CBD"
+    exit_script "Error Downloading CBD"
 fi
 
 if [[ $(curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /tmp/) -eq 0 ]]; then
     add_log "CB client downloaded and stored in /tmp/"
 else
-    add_log "Error Downloading CB client"
+    exit_script "Error Downloading CB client"
 fi
 add_log "Creating Cloudbreak directory /var/lib/cloudbreak-deployment"
 if [[ $(mkdir -p /var/lib/cloudbreak-deployment) -eq 0 ]];then add_log "Cloudbreak dir created succesfully"; else exit_script "Unable to create Cloudbreak directory"; fi
@@ -148,9 +150,19 @@ fi
 if [[ $(wc -l /var/lib/cloudbreak-deployment/Profile | cut -f1 -d" ") -eq 4 ]]; then add_log "Profile file generated successfully"; else exit "Unable to generate Profile file in /var/lib/cloudbreak-deployment"; fi
 add_log "Clearing yml files in /var/lib/cloudbreak-deployment"
 if [[ $(rm /var/lib/cloudbreak-deployment/*.yml) -eq 0 ]]; then add_log "Cleanup successfully"; else add_log "No existing yml file(s) found so ignoring ..."; fi
-cd /var/lib/cloudbreak-deployment && cbd generate && add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
+cbdir="/var/lib/cloudbreak-deployment"
+if [[ $(pwd) == $cbdir ]]; then 
+    echo "Current working dir is /var/lib/cloudbreak-deployment"
+    $(cbd generate)
+    add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
+else 
+    add_log "Changing the pwd to /var/lib/cloudbreak-deployment"
+    $(pushd /var/lib/cloudbreak-deployment) && $(cbd generate)
+    add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
+fi 
+
 add_log "Downloading Docker images"
-cd /var/lib/cloudbreak-deployment && cbd pull-parallel && add_log "Docker images download completed"
+pushd /var/lib/cloudbreak-deployment && cbd pull-parallel && add_log "Docker images download completed"
 rm -f /tmp/*.tar 2> /dev/null
 rm -f /tmp/*.tar.gz 2> /dev/null
 rm -f /var/www/html/cb/*.* 2> /dev/null
@@ -200,4 +212,3 @@ make_dep()
 install_prereq
 make_cb
 make_dep
-
