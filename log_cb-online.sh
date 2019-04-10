@@ -1,11 +1,14 @@
 #!/bin/bash
-if [ -d "/var/log/hwx/" ]; then
-    echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/cb_install.log
-    echo `date "+%Y-%m-%d %H:%M:%S : Log Dir already exists /var/log/hwx"` >> /var/log/hwx/cb_install.log
-else
-    echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/cb_install.log
-    $(mkdir /var/log/hwx) && echo `date "+%Y-%m-%d %H:%M:%S : Created log dir /var/log/hwx"` >> /var/log/hwx/cb_install.log
-fi
+start_script()
+{
+    if [ -d "/var/log/hwx/" ]; then
+        echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/cb_install.log
+        echo `date "+%Y-%m-%d %H:%M:%S : Log Dir already exists /var/log/hwx"` >> /var/log/hwx/cb_install.log
+    else
+        echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/cb_install.log
+        $(mkdir /var/log/hwx) && echo `date "+%Y-%m-%d %H:%M:%S : Created log dir /var/log/hwx"` >> /var/log/hwx/cb_install.log
+    fi
+}
 
 add_log() { echo `date "+%Y-%m-%d %H:%M:%S : $1"` >> /var/log/hwx/cb_install.log; }
 
@@ -15,6 +18,7 @@ exit_script()
     add_log "Exiting the script execution"
     exit 1
 }
+
 install_prereq()
 {
     add_log "Installing pre-requisites"
@@ -100,112 +104,96 @@ install_prereq()
         if [[ $(cat /etc/sysconfig/docker | grep "log-driver" | cut -f2 -d" " | cut -f2 -d"=") == "json-file" ]]; then add_log "Docker configured to JSON File"; else exit_script "Unable to validate Docker config file"; fi
         systemctl restart docker && add_log "Restarting Docker service"
     fi
+    if [[ $(wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -O /tmp/epel.rpm) -eq 0 ]]; then 
+        add_log "EPEL repo downloaded successfully in /tmp/epel.rpm"
+        if [[ $(rpm -i /tmp/epel.rpm) -eq 0 ]]; then
+            add_log "EPEL repo installed successfully - $(rpm -qa | grep epel)"
+            if [[ $(yum -y install epel-release jq) -eq 0 ]]; then
+                add_log "Installed - $(rpm -qa | grep epel-release)"
+                add_log "Installed - $(rpm -qa | grep jq)"
+            else
+                exit_script "Error installing EPEL-Release and JQ"
+            fi
+        else
+            exit_script "Error Installing EPEL release"
+        fi
+    else
+        exit_script "Unable to download EPEL repo rpm from FEDORA site"
+    fi
 }
 
 
-make_cb()
+get_cb()
 {
-wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -O /tmp/epel.rpm
-rpm -i /tmp/epel.rpm
-
-if [[ "$(yum -y install epel-release jq)" ]]; then
-    add_log "Installed - $(rpm -qa | grep epel-release)"
-    add_log "Installed - $(rpm -qa | grep jq)"
-else
-    exit_script "Installation Error or Package not avail for JQ and EPEL Release $?"
-fi
-
-if [[ $(curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd) -eq 0 ]]; then
-    add_log "CBD file downloaded and stored in /bin/"
-else
-    exit_script "Error Downloading CBD"
-fi
-
-if [[ $(curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /tmp/) -eq 0 ]]; then
-    add_log "CB client downloaded and stored in /tmp/"
-else
-    exit_script "Error Downloading CB client"
-fi
-add_log "Creating Cloudbreak directory /var/lib/cloudbreak-deployment"
-if [[ $(mkdir -p /var/lib/cloudbreak-deployment) -eq 0 ]];then add_log "Cloudbreak dir created succesfully"; else exit_script "Unable to create Cloudbreak directory"; fi
-export IP=$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)
-add_log "Machine IP detected as $IP"
-add_log "Creating Profile file for Cloudbreak"
-if [[ -e /var/lib/cloudbreak-deployment/Profile ]]; then
-rm -f /var/lib/cloudbreak-deployment/Profile
-    cat >> /var/lib/cloudbreak-deployment/Profile << END
-    export UAA_DEFAULT_SECRET=Hadoop-123
-    export UAA_DEFAULT_USER_PW=Hadoop-123
-    export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
-    export PUBLIC_IP=$IP
-    END
-else
-    cat >> /var/lib/cloudbreak-deployment/Profile << END
-    export UAA_DEFAULT_SECRET=Hadoop-123
-    export UAA_DEFAULT_USER_PW=Hadoop-123
-    export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
-    export PUBLIC_IP=$IP
-    END
-fi
-if [[ $(wc -l /var/lib/cloudbreak-deployment/Profile | cut -f1 -d" ") -eq 4 ]]; then add_log "Profile file generated successfully"; else exit "Unable to generate Profile file in /var/lib/cloudbreak-deployment"; fi
-add_log "Clearing yml files in /var/lib/cloudbreak-deployment"
-if [[ $(rm /var/lib/cloudbreak-deployment/*.yml) -eq 0 ]]; then add_log "Cleanup successfully"; else add_log "No existing yml file(s) found so ignoring ..."; fi
-cbdir="/var/lib/cloudbreak-deployment"
-if [[ $(pwd) == $cbdir ]]; then 
-    echo "Current working dir is /var/lib/cloudbreak-deployment"
-    $(cbd generate)
-    add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
-else 
-    add_log "Changing the pwd to /var/lib/cloudbreak-deployment"
-    $(pushd /var/lib/cloudbreak-deployment) && $(cbd generate)
-    add_log "Cloudbreak profile generated in /var/lib/cloudbreak-deployment"
-fi 
-
-add_log "Downloading Docker images"
-if [[ $(pwd) == $cbdir ]]; then 
-    echo "Current working dir is /var/lib/cloudbreak-deployment"
-    if [[ $(cbd pull-parallel) -eq 0 ]]; then
-        add_log "Pull-parallel completed successfully"
+    if [[ $(curl -Ls public-repo-1.hortonworks.com/HDP/cloudbreak/cloudbreak-deployer_2.9.0_$(uname)_x86_64.tgz | sudo tar -xz -C /bin cbd) -eq 0 ]]; then
+        add_log "CBD file downloaded and stored in /bin/"
     else
-        exit_script "Error in pull-parallel"
-        
+        exit_script "Error Downloading CBD"
     fi
-else 
-    add_log "Changing the pwd to /var/lib/cloudbreak-deployment"
-    if [[ $(pushd /var/lib/cloudbreak-deployment) ]]; then
-        if [[ $(cbd pull-parallel) -eq 0 ]]; then
-            add_log "Pull parallel completed successfully"
-        else
-            exit_script "Error in pull-parallel"
-         
+
+    if [[ $(curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /tmp/) -eq 0 ]]; then
+        add_log "CB client downloaded and stored in /tmp/"
+    else
+        exit_script "Error Downloading CB client"
+    fi
+}
+
+make_profile()
+{
+    add_log "Creating Cloudbreak directory /var/lib/cloudbreak-deployment"
+    if [[ $(mkdir -p /var/lib/cloudbreak-deployment) -eq 0 ]];then add_log "Cloudbreak dir created succesfully"; else exit_script "Unable to create Cloudbreak directory"; fi
+
+    export IP=$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)
+    add_log "Machine IP detected as $IP"
+    add_log "Creating Profile file for Cloudbreak"
+
+    if [[ -e /var/lib/cloudbreak-deployment/Profile ]]; then
+        mv /var/lib/cloudbreak-deployment/Profile /var/lib/cloudbreak-deployment/$(date "+%Y_%m_%d_%H_%M_%S")_Profile.bkp
+        echo "export UAA_DEFAULT_SECRET=Hadoop-123" > /var/lib/cloudbreak-deployment/Profile
+        echo "export UAA_DEFAULT_USER_PW=Hadoop-123" >> /var/lib/cloudbreak-deployment/Profile
+        echo "export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com" >> /var/lib/cloudbreak-deployment/Profile
+        echo "export PUBLIC_IP=$IP" >> /var/lib/cloudbreak-deployment/Profile
+    else
+        echo "export UAA_DEFAULT_SECRET=Hadoop-123" > /var/lib/cloudbreak-deployment/Profile
+        echo "export UAA_DEFAULT_USER_PW=Hadoop-123" >> /var/lib/cloudbreak-deployment/Profile
+        echo "export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com" >> /var/lib/cloudbreak-deployment/Profile
+        echo "export PUBLIC_IP=$IP" >> /var/lib/cloudbreak-deployment/Profile
+    fi
+
+    if [[ $(wc -l /var/lib/cloudbreak-deployment/Profile | cut -f1 -d" ") -eq 4 ]]; then add_log "Profile file generated successfully"; else exit_script "Unable to generate Profile file in /var/lib/cloudbreak-deployment"; fi
+    
+    add_log "Clearing yml files in /var/lib/cloudbreak-deployment"
+    
+    if [[ $(rm /var/lib/cloudbreak-deployment/*.yml) -eq 0 ]]; then add_log "yml Cleanup successfully"; else add_log "No existing yml file(s) found so ignoring ..."; fi
+}
+
+download_docker()
+{
+    add_log "Generating YML files"
+    [[ $(cd /var/lib/cloudbreak-deployment && cbd generate) ]] && add_log "YML files generated in /var/lib/cloudbreak-deployment" || exit_script "Error generating yml files"
+    
+    add_log "Downloading Docker images"
+    [[ $(cd /var/lib/cloudbreak-deployment && cbd pull-parallel) ]] && add_log "Docker Images download completed" || exit_script "Error Downloading Docker images"
+}
+
+archive_docks()
+{
+    rm -f /tmp/*.tar 2> /dev/null
+    rm -f /tmp/*.tar.gz 2> /dev/null
+    rm -f /var/www/html/cb/*.* 2> /dev/null
+    add_log "Checking the Total count of Docker Images...."
+    if [[ $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) -ge 17 ]]; then
+        add_log "Found Valid num of docker images - $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) so proceeding to archive images..."
+        add_log "Archiving the Docker Images...."
+        if [[ $(docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/alldock.tar) -eq 0 ]];then 
+            add_log "Docker images archived successfully in /tmp/alldock.tar"
+        else 
+            exit_script "Error in Archiving docker images" 
         fi
+    else
+        add_log "Lesser docker images Found - $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l)"
+        exit_script "Please execute pull-parallel command again"
     fi
-      
-fi 
-
- 
-rm -f /tmp/*.tar 2> /dev/null
-rm -f /tmp/*.tar.gz 2> /dev/null
-rm -f /var/www/html/cb/*.* 2> /dev/null
-if [[ $(cd /tmp/ && docker save traefik:v1.6.6-alpine > traefikv1.6.6-alpine.tar) -eq 0 ]]; then add_log "Docker image 1 : traefik saved"; else exit_script "error downloading Traefik";fi
-if [[ $(cd /tmp/ && docker save hortonworks/haveged:1.1.0 >  hortonworks_haveged:1.1.0.tar) -eq 0 ]]; then add_log "Docker image 2 : hortonworks_haveged saved"; else exit_script "error downloading hortonworks_haveged";fi
-if [[ $(cd /tmp/ && docker save gliderlabs/consul-server:0.5 > gliderlabs_consul-server:0.5.tar) -eq 0 ]]; then add_log "Docker image 3 : gliderlabs_consul saved"; else exit_script "error downloading gliderlabs_consul";fi
-if [[ $(cd /tmp/ && docker save gliderlabs/registrator:v7 > gliderlabs_registrator:v7.tar) -eq 0 ]]; then add_log "Docker image 4 : gliderlabs/registrato saved"; else exit_script "error downloading gliderlabs/registrato";fi
-if [[ $(cd /tmp/ && docker save hortonworks/socat:1.0.0 > hortonworks_socat:1.0.0.tar) -eq 0 ]]; then add_log "Docker image 5 : socat saved"; else exit_script "error downloading socat";fi
-if [[ $(cd /tmp/ && docker save hortonworks/logspout:v3.2.2 > hortonworks_logspout:v3.2.2.tar) -eq 0 ]]; then add_log "Docker image 6 : logspout saved"; else exit_script "error downloading logspout";fi
-if [[ $(cd /tmp/ && docker save hortonworks/logrotate:1.0.1 > hortonworks_logrotate:1.0.1.tar) -eq 0 ]]; then add_log "Docker image 7 : logrotate saved"; else exit_script "error downloading logrotate";fi
-if [[ $(cd /tmp/ && docker save catatnight/postfix:latest > catatnight_postfix:latest.tar) -eq 0 ]]; then add_log "Docker image 8 : postfix saved"; else exit_script "error downloading postfix";fi
-if [[ $(cd /tmp/ && docker save hortonworks/cbd-smartsense:0.13.4 > hortonworks_cbd-smartsense:0.13.4.tar) -eq 0 ]]; then add_log "Docker image 9 : smartsense saved"; else exit_script "error downloading smartsense";fi
-if [[ $(cd /tmp/ && docker save postgres:9.6.1-alpine > postgres:9.6.1-alpine.tar) -eq 0 ]]; then add_log "Docker image 10 : postgres saved"; else exit_script "error downloading postgres";fi
-if [[ $(cd /tmp/ && docker save hortonworks/cloudbreak-uaa:3.6.5-pgupdate > hortonworks_cloudbreak-uaa:3.6.5-pgupdate.tar) -eq 0 ]]; then add_log "Docker image 11 : cloudbreak-uaa:3.6.5 saved"; else exit_script "error downloading cloudbreak-uaa:3.6.5";fi
-if [[ $(cd /tmp/ && docker save hortonworks/cloudbreak:2.9.0 > hortonworks_cloudbreak:2.9.0.tar) -eq 0 ]]; then add_log "Docker image 12 : cloudbreak:2.9.0 saved"; else exit_script "error downloading cloudbreak:2.9.0";fi
-if [[ $(cd /tmp/ && docker save hortonworks/hdc-auth:2.9.0 > hortonworks_hdc-auth:2.9.0.tar) -eq 0 ]]; then add_log "Docker image 13 : hdc-auth saved"; else exit_script "error downloading hdc-auth";fi
-if [[ $(cd /tmp/ && docker save hortonworks/hdc-web:2.9.0 > hortonworks_hdc-web:2.9.0.tar) -eq 0 ]]; then add_log "Docker image 14 : hdc-web saved"; else exit_script "error downloading hdc-web";fi
-if [[ $(cd /tmp/ && docker save hortonworks/cloudbreak-autoscale:2.9.0 > hortonworks_cloudbreak-autoscale:2.9.0.tar) -eq 0 ]]; then add_log "Docker image 15 : cloudbreak-autoscale:2.9.0 saved"; else exit_script "error downloading cloudbreak-autoscale:2.9.0";fi
-
-cd /tmp/
-add_log "Archiving the Docker Images...."
-if [[ $(tar -czf alldock.tar.gz traefikv1.6.6-alpine.tar hortonworks_haveged:1.1.0.tar gliderlabs_consul-server:0.5.tar gliderlabs_registrator:v7.tar hortonworks_socat:1.0.0.tar hortonworks_logspout:v3.2.2.tar hortonworks_logrotate:1.0.1.tar catatnight_postfix:latest.tar hortonworks_cbd-smartsense:0.13.4.tar postgres:9.6.1-alpine.tar hortonworks_cloudbreak-uaa:3.6.5-pgupdate.tar hortonworks_cloudbreak:2.9.0.tar hortonworks_hdc-auth:2.9.0.tar hortonworks_hdc-web:2.9.0.tar hortonworks_cloudbreak-autoscale:2.9.0.tar ) -eq 0 ]]; then add_log "Archiving docker images successfull"; else exit_script "failed to archive"; fi
 }
 
 make_dep()
@@ -217,12 +205,18 @@ make_dep()
     cp /bin/cbd /tmp/
     pushd /tmp/
     add_log "Archiving dependencies with docker tar file ...."
-    if [[ $(tar -czf mastercb.tar.gz cbbin.tar.gz alldock.tar.gz cbd cb) -eq 0 ]];then add_log "Archiving dependencies with docker files successfull"; else exit_script "Failed to Archive dependencies with docker files"; fi
+
+    if [[ $(tar -czf mastercb.tar.gz cbbin.tar.gz alldock.tar cbd cb) -eq 0 ]];then add_log "Archiving dependencies with docker files successfull"; else exit_script "Failed to Archive dependencies with docker files"; fi
+    
     if [[ $(mkdir -p /var/www/html/cb) -eq 0 ]];then add_log "Created Dir : /var/www/html/cb "; else exit_script "Unable to create /var/www/html/cb"; fi
     add_log "Copying mastercb.tar.gz to httpd ...."
+
+
     if [[ $(cp /tmp/mastercb.tar.gz /var/www/html/cb/ -f) -eq 0 ]]; then add_log "Copied to httpd successfully"; else exit_script "Failed to copy Master Tar file to httpd"; fi
     add_log "Validating the file size of Master Tar file"
-    if [[ $(du -h /var/www/html/cb/mastercb.tar.gz | cut -f1) == "2.0G" ]]; then add_log "File Size of mastercb.tar.gz is 2.0GB so proceeding"; else exit_script "TAR ball file contains lesser files than expected";fi
+
+    FILESIZE=$(stat -c%s "/var/www/html/cb/mastercb.tar.gz")
+    [[ $FILESIZE > 1718475200 ]] && add_log "File Size of mastercb.tar.gz is more than 1.7GB so proceeding" || exit_script "TAR ball contains lesser files  than expected"
     echo $(cksum /var/www/html/cb/mastercb.tar.gz | cut -f1 -d" ") > /var/www/html/cb/checksum.md5
     add_log "restarting httpd..."
     if [[ $(systemctl enable httpd && systemctl restart httpd) -eq 0 ]]; then add_log "Restarted HTTPD successfully"; else exit_script "ERROR Restarting HTTPD"; fi
@@ -230,6 +224,10 @@ make_dep()
     add_log "Script Execution completed Successfully"
 }
 
+start_script
 install_prereq
-make_cb
+get_cb
+make_profile
+download_docker
+archive_docks
 make_dep
