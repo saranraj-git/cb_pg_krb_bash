@@ -162,7 +162,28 @@ else
 fi 
 
 add_log "Downloading Docker images"
-pushd /var/lib/cloudbreak-deployment && cbd pull-parallel && add_log "Docker images download completed"
+if [[ $(pwd) == $cbdir ]]; then 
+    echo "Current working dir is /var/lib/cloudbreak-deployment"
+    if [[ $(cbd pull-parallel) -eq 0 ]]; then
+        add_log "Pull-parallel completed successfully"
+    else
+        exit_script "Error in pull-parallel"
+        
+    fi
+else 
+    add_log "Changing the pwd to /var/lib/cloudbreak-deployment"
+    if [[ $(pushd /var/lib/cloudbreak-deployment) ]]; then
+        if [[ $(cbd pull-parallel) -eq 0 ]]; then
+            add_log "Pull parallel completed successfully"
+        else
+            exit_script "Error in pull-parallel"
+         
+        fi
+    fi
+      
+fi 
+
+ 
 rm -f /tmp/*.tar 2> /dev/null
 rm -f /tmp/*.tar.gz 2> /dev/null
 rm -f /var/www/html/cb/*.* 2> /dev/null
