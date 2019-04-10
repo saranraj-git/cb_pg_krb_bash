@@ -133,19 +133,19 @@ add_log "Machine IP detected as $IP"
 add_log "Creating Profile file for Cloudbreak"
 if [[ -e /var/lib/cloudbreak-deployment/Profile ]]; then
 rm -f /var/lib/cloudbreak-deployment/Profile
-cat >> /var/lib/cloudbreak-deployment/Profile << END
-export UAA_DEFAULT_SECRET=Hadoop-123
-export UAA_DEFAULT_USER_PW=Hadoop-123
-export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
-export PUBLIC_IP=$IP
-END
+    cat >> /var/lib/cloudbreak-deployment/Profile << END
+    export UAA_DEFAULT_SECRET=Hadoop-123
+    export UAA_DEFAULT_USER_PW=Hadoop-123
+    export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
+    export PUBLIC_IP=$IP
+    END
 else
-cat >> /var/lib/cloudbreak-deployment/Profile << END
-export UAA_DEFAULT_SECRET=Hadoop-123
-export UAA_DEFAULT_USER_PW=Hadoop-123
-export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
-export PUBLIC_IP=$IP
-END
+    cat >> /var/lib/cloudbreak-deployment/Profile << END
+    export UAA_DEFAULT_SECRET=Hadoop-123
+    export UAA_DEFAULT_USER_PW=Hadoop-123
+    export UAA_DEFAULT_USER_EMAIL=cbadmin@example.com
+    export PUBLIC_IP=$IP
+    END
 fi
 if [[ $(wc -l /var/lib/cloudbreak-deployment/Profile | cut -f1 -d" ") -eq 4 ]]; then add_log "Profile file generated successfully"; else exit "Unable to generate Profile file in /var/lib/cloudbreak-deployment"; fi
 add_log "Clearing yml files in /var/lib/cloudbreak-deployment"
