@@ -108,14 +108,22 @@ install_prereq()
         add_log "EPEL repo downloaded successfully in /tmp/epel.rpm"
         if [[ $(rpm -i /tmp/epel.rpm) -eq 0 ]]; then
             add_log "EPEL repo installed successfully - $(rpm -qa | grep epel)"
-            if [[ $(yum -y install epel-release jq) -eq 0 ]]; then
-                add_log "Installed - $(rpm -qa | grep epel-release)"
-                add_log "Installed - $(rpm -qa | grep jq)"
+            yum -y install epel*release*
+            a=$(rpm -qa | grep epel)
+            if [[ $a ]]; then
+                add_log "Installed - $a"
+                yum -y install jq
+                j=$(rpm -qa | grep jq)
+                if [[ $j ]]; then
+                    add_log "Installed - $j"
+                else
+                    exit_script "Error installing JQ"
+                fi
             else
-                exit_script "Error installing EPEL-Release and JQ"
+                exit_script "Error installing EPEL-Release"
             fi
         else
-            exit_script "Error Installing EPEL release"
+            exit_script "Error Installing EPEL Repo RPM"
         fi
     else
         exit_script "Unable to download EPEL repo rpm from FEDORA site"
@@ -231,3 +239,4 @@ make_profile
 download_docker
 archive_docks
 make_dep
+
