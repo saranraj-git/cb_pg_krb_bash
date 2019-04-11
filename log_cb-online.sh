@@ -182,6 +182,7 @@ download_docker()
     #[[ $(cd /var/lib/cloudbreak-deployment && cbd generate) ]] && add_log "YML files generated in /var/lib/cloudbreak-deployment" || exit_script "Error generating yml files"
     pushd /var/lib/cloudbreak-deployment 
     add_log "Present Dir is $PWD"
+    add_log "Generating yml files now ...."
     cbd generate 
     popd
     if [[ -e /var/lib/cloudbreak-deployment/docker-compose.yml ]]; then
@@ -191,8 +192,10 @@ download_docker()
             add_log "Running Pull-Parallel docker images"
             pushd /var/lib/cloudbreak-deployment 
             add_log "Present Dir is $PWD"
+            add_log "Downloading Docker images.... takes approx 5 mins"
             cbd pull-parallel 
             popd
+            add_log "Validating the downloaded docker images"
             if [[ $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) -ge 16 ]]; then
                 add_log "Found Valid num of docker images - $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) so proceeding to next step..."
             else
@@ -243,7 +246,6 @@ make_dep()
     
     if [[ $(mkdir -p /var/www/html/cb) -eq 0 ]];then add_log "Created Dir : /var/www/html/cb "; else exit_script "Unable to create /var/www/html/cb"; fi
     add_log "Copying mastercb.tar.gz to httpd ...."
-
 
     if [[ $(cp /tmp/mastercb.tar.gz /var/www/html/cb/ -f) -eq 0 ]]; then add_log "Copied to httpd successfully"; else exit_script "Failed to copy Master Tar file to httpd"; fi
     add_log "Validating the file size of Master Tar file"
