@@ -52,7 +52,12 @@ install_prereq()
     else 
         add_log "Firewalld already disabled to start on boot"
     fi
-
+    if [[ $(getenforce) == "Enforcing" ]]; then 
+        if [[ $(setenforce 0) ]]; then add_log "Setenforce 0 - successful"; else exit_script "Failed to execute - setenforce 0"; fi
+        [[ ! $(getenforce) == "Enforcing" ]] && add_log "Validating SELinux again - currently set to $(getenforce)" || exit_script "SElinux still set to $(getenforce)"
+    else 
+        add_log "SE Linux currently set to $(getenforce)"
+    fi
     if [[ $(systemctl is-active firewalld) ]]; then 
         systemctl stop firewalld && add_log "Stopped Firewalld service"
     else 
@@ -61,10 +66,6 @@ install_prereq()
     
     if [[ $(iptables --flush INPUT && iptables --flush FORWARD) -eq 0 ]]; then add_log "IPTables Flush successfull" ; else add_log "IPTables Flush failed" ; fi
     if [[ $(service iptables save) ]]; then add_log "IPTables saved" ; else add_log "IPTables save failed" ; fi
-    
-    if [[ $(getenforce) ]]; then add_log "SELinux is already disabled " ; else add_log "SELinux enabled" ; exit_script "SELinux Enabled"; fi
-    
-
     sestatus=$(cat /etc/selinux/config | grep "^SELINUX" | head -n1 | cut -f2 -d'=')
     if [[ $sestatus == "disabled" ]]; then 
         add_log "SE Linux already disabled during boot"; 
@@ -179,13 +180,19 @@ download_docker()
 {
     add_log "Generating YML files"
     #[[ $(cd /var/lib/cloudbreak-deployment && cbd generate) ]] && add_log "YML files generated in /var/lib/cloudbreak-deployment" || exit_script "Error generating yml files"
-    cd /var/lib/cloudbreak-deployment && cbd generate
+    pushd /var/lib/cloudbreak-deployment 
+    add_log "Present Dir is $PWD"
+    cbd generate 
+    popd
     if [[ -e /var/lib/cloudbreak-deployment/docker-compose.yml ]]; then
         add_log "Docker-compose.yml generated successfully"
         if [[ -e /var/lib/cloudbreak-deployment/uaa.yml ]]; then
             add_log "uaa.yml file generated successfully"
             add_log "Running Pull-Parallel docker images"
-            cd /var/lib/cloudbreak-deployment && cbd pull-parallel
+            pushd /var/lib/cloudbreak-deployment 
+            add_log "Present Dir is $PWD"
+            cbd pull-parallel 
+            popd
             if [[ $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) -ge 16 ]]; then
                 add_log "Found Valid num of docker images - $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) so proceeding to next step..."
             else
@@ -257,4 +264,3 @@ make_profile
 download_docker
 archive_docks
 make_dep
-
