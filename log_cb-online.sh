@@ -53,7 +53,7 @@ install_prereq()
         add_log "Firewalld already disabled to start on boot"
     fi
     if [[ $(getenforce) == "Enforcing" ]]; then 
-        if [[ $(setenforce 0) ]]; then add_log "Setenforce 0 - successful"; else exit_script "Failed to execute - setenforce 0"; fi
+        if [[ $(setenforce 0) -eq 0 ]]; then add_log "Setenforce 0 - successful"; else exit_script "Failed to execute - setenforce 0"; fi
         [[ ! $(getenforce) == "Enforcing" ]] && add_log "Validating SELinux again - currently set to $(getenforce)" || exit_script "SElinux still set to $(getenforce)"
     else 
         add_log "SE Linux currently set to $(getenforce)"
