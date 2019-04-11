@@ -178,10 +178,11 @@ make_profile()
 download_docker()
 {
     add_log "Generating YML files"
-    [[ $(cd /var/lib/cloudbreak-deployment && cbd generate) ]] && add_log "YML files generated in /var/lib/cloudbreak-deployment" || exit_script "Error generating yml files"
-    
+    #[[ $(cd /var/lib/cloudbreak-deployment && cbd generate) ]] && add_log "YML files generated in /var/lib/cloudbreak-deployment" || exit_script "Error generating yml files"
+    cd /var/lib/cloudbreak-deployment && cbd generate
+    cd /var/lib/cloudbreak-deployment && cbd pull-parallel
     add_log "Downloading Docker images"
-    [[ $(cd /var/lib/cloudbreak-deployment && cbd pull-parallel) ]] && add_log "Docker Images download completed" || exit_script "Error Downloading Docker images"
+    #[[ $(cd /var/lib/cloudbreak-deployment && cbd pull-parallel) ]] && add_log "Docker Images download completed" || exit_script "Error Downloading Docker images"
 }
 
 archive_docks()
@@ -190,7 +191,7 @@ archive_docks()
     rm -f /tmp/*.tar.gz 2> /dev/null
     rm -f /var/www/html/cb/*.* 2> /dev/null
     add_log "Checking the Total count of Docker Images...."
-    if [[ $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) -ge 17 ]]; then
+    if [[ $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) -ge 1 ]]; then
         add_log "Found Valid num of docker images - $(docker images | sed '1d' | awk '{print $1 ":" $2 }' | wc -l) so proceeding to archive images..."
         add_log "Archiving the Docker Images...."
         if [[ $(docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/alldock.tar) -eq 0 ]];then 
