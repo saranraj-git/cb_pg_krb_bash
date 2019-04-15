@@ -26,7 +26,7 @@ getenforce
 
 echo "###################################"
 echo "Installing Docker"
-yum install -y -q docker-1.13.1-75.git8633870.el7.centos.x86_64 docker-client-1.13.1-75.git8633870.el7.centos.x86_64 docker-common-1.13.1-75.git8633870.el7.centos.x86_64
+yum install -y -q docker-1*13*1*75* docker-client-1*13*75* docker-common-1*13*75*
 systemctl start docker
 systemctl enable docker
 yum install yum-utils -y -q
