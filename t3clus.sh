@@ -13,6 +13,14 @@ Components required:
 5. Image catalog for the Instances being provisioned by cloudbreak
 '
 
+cburl="https://cbvm.com"
+cbuser="cbadmin@example.com "
+cbpasswd="Hadoop-123"
+pgserver="cbpostgres.postgres.database.azure.com"
+pgusername="cbpsqladmin@cbpostgres"
+pgpwd="Hadoop-12345"
+
+
 start_script()
 {
     if [ -d "/var/log/hwx/" ]; then
@@ -32,6 +40,37 @@ exit_script()
     add_log "Exiting the script execution"
     exit 1
 }
+
+install_Cb()
+{
+    if [[ $(curl -Ls https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz | sudo tar -xz -C /bin cb && chmod +x /bin/cb) -eq 0 ]];then
+        add_log "CB utility downloaded successfully"
+        if [[ $(cb configure --server $cburl --username $cbuser --password $cbpasswd) -eq 0 ]];then
+            add_log "CB configured succcessfully with Cloudbreak VM"
+        else
+            exit_script "Unable to configure CB Utility with Cloudbreak"
+        fi
+
+    else
+        exit_script "Failed to Download CB from the internet"
+    fi
+}
+
+get_arm()
+{
+    
+}
+
+create_cluster()
+{
+
+}
+
+start_script
+install_Cb
+get_arm
+create_cluster
+
 
 
 
