@@ -1,0 +1,302 @@
+{
+  "inputs": {},
+  "parameters": {
+    "resourceGroupName": "srjhdp3cluster",
+    "encryptStorage": true
+  },
+  "general": {
+    "credentialName": "t3ddepcredentials",
+    "name": "srjhdp3cluster"
+  },
+  "placement": {
+    "region": "Australia East"
+  },
+  "tags": {
+    "userDefinedTags": {
+      "AutoDelete": "No"
+    }
+  },
+  "cluster": {
+    "ambari": {
+      "blueprintName": "hdfs-hbase-yarn-grafana-logsearch",
+      "platformVersion": "HDP 3.1",
+      "ambariStackDetails": {
+        "version": "3.1",
+        "verify": false,
+        "enableGplRepo": false,
+        "stack": "HDP",
+        "stackOs": "centos7",
+        "mpacks": []
+      },
+      "gateway": {
+        "enableGateway": true,
+        "topologies": [
+          {
+            "topologyName": "dp-proxy",
+            "exposedServices": [
+              "ALL"
+            ]
+          }
+        ],
+        "ssoType": "NONE"
+      },
+      "userName": "admin",
+      "password": "<Super-secure-password>",
+      "validateBlueprint": false,
+      "ambariSecurityMasterKey": "",
+      "kerberos": {
+        "password": "",
+        "principal": "ambari/admin@EXAMPLE.com",
+        "url": "10.50.0.69",
+        "adminUrl": "10.50.0.69",
+        "realm": "EXAMPLE.COM",
+        "ldapUrl": "",
+        "containerDn": "",
+        "tcpAllowed": false,
+        "descriptor": "",
+        "krb5Conf": ""
+      },
+      "enableSecurity": true
+    },
+    "cloudStorage": {},
+    "rdsConfigNames": [
+      "myambaridb",
+      "myhivedb"
+    ]
+  },
+  "imageSettings": {
+    "imageCatalog": "cloudbreak-default",
+    "imageId": "c08fb21d-3fa6-46c1-4b41-7a4c2dd40b88"
+  },
+  "imageType": "prewarmed",
+  "instanceGroups": [
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master1-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master1",
+      "type": "GATEWAY",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master2-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master2",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master3-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master3",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master4-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master4",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master5-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master5",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master6_7-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master6_7",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-master8_9-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master8_9",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-worker-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "worker",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjhdp3cluster-edge-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "edge",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    }
+  ],
+  "network": {
+    "parameters": {
+      "subnetId": "xaea3sub2703191930",
+      "noPublicIp": true,
+      "noFirewallRules": true,
+      "resourceGroupName": "xaea3RG2703191929",
+      "networkId": "xaea3vnet2703191930"
+    }
+  },
+  "stackAuthentication": {
+    "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA44aHHKFLmNZwrMha2ASr59QQvwA5WtsUpBFjE4mrnInw78t5chevrDuqvwx8zbrFvaCRRbat+V5waUWoj7VbrDfzpQEar4Ny9yV7+Tu9X/S144eUUtP2Svb/GJBD68MLFoHFgGrCQuyTFQP73qWD1+AY7naGmxyh/kqHt+odyFNCPrNmQJ+YnP78UTty/jLBLN//UDXChmOEYWNnMjvbyi+BVzsuHFr5zVOowXh7dHyfLWZa5E211ybH86EM0bhLr0BSDrBE3PMjVoTqxplCpIyVTQMBThpy7YQyTs+MtZjtypLJerqUmawaJ1yySMR11gMqrAKh2lp+FtlD+teuiQ== rsa-key-20190417"
+  }
+}
