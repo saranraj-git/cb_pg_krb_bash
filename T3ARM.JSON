@@ -1,12 +1,12 @@
 {
   "inputs": {},
   "parameters": {
-    "resourceGroupName": "srjhdp3cluster",
+    "resourceGroupName": "srjtest2",
     "encryptStorage": true
   },
   "general": {
     "credentialName": "t3ddepcredentials",
-    "name": "srjhdp3cluster"
+    "name": "srjtest2"
   },
   "placement": {
     "region": "Australia East"
@@ -41,18 +41,36 @@
         "ssoType": "NONE"
       },
       "userName": "admin",
-      "password": "<Super-secure-password>",
+      "password": "",
       "validateBlueprint": false,
       "ambariSecurityMasterKey": "",
+      "ambariStackDetails": {
+        "stack": "HDP-3.1",
+        "version": "3.1",
+        "os": "redhat7",
+        "stackRepoId": "HDP-3.1",
+        "stackBaseURL": "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0",
+        "utilsRepoId": "HDP-UTILS-1.1.0.22",
+        "utilsBaseURL": "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7",
+        "enableGplRepo": false,
+        "verify": true,
+        "repositoryVersion": "3.1.0.0-78",
+        "versionDefinitionFileUrl": "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-78.xml",
+        "mpacks": []
+      },
+      "ambariRepoDetailsJson": {
+        "version": "2.7.3.0",
+        "baseUrl": "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0"
+      },
       "kerberos": {
         "password": "",
-        "principal": "ambari/admin@EXAMPLE.com",
+        "principal": "ambari/admin@EXAMPLE.COM",
         "url": "10.50.0.69",
         "adminUrl": "10.50.0.69",
         "realm": "EXAMPLE.COM",
         "ldapUrl": "",
         "containerDn": "",
-        "tcpAllowed": false,
+        "tcpAllowed": true,
         "descriptor": "",
         "krb5Conf": ""
       },
@@ -61,11 +79,12 @@
     "cloudStorage": {},
     "rdsConfigNames": [
       "myambaridb",
-      "myhivedb"
+      "myhivedb",
+      "myrangerdb"
     ]
   },
   "imageSettings": {
-    "imageCatalog": "cloudbreak-default",
+    "imageCatalog": "mycustomcatalog",
     "imageId": "c08fb21d-3fa6-46c1-4b41-7a4c2dd40b88"
   },
   "imageType": "prewarmed",
@@ -73,7 +92,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master1-as",
+          "name": "srjcluster-master1-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -97,7 +116,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master2-as",
+          "name": "srjcluster-master2-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -121,7 +140,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master3-as",
+          "name": "srjcluster-master3-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -145,7 +164,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master4-as",
+          "name": "srjcluster-master4-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -169,7 +188,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master5-as",
+          "name": "srjcluster-master5-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -193,7 +212,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master6_7-as",
+          "name": "srjcluster-master6_7-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -217,7 +236,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-master8_9-as",
+          "name": "srjcluster-master8_9-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -241,7 +260,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-worker-as",
+          "name": "srjcluster-worker-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
@@ -265,7 +284,7 @@
     {
       "parameters": {
         "availabilitySet": {
-          "name": "srjhdp3cluster-edge-as",
+          "name": "srjcluster-edge-as",
           "faultDomainCount": 2,
           "updateDomainCount": 20
         }
