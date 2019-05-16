@@ -1,12 +1,12 @@
 {
   "inputs": {},
   "parameters": {
-    "resourceGroupName": "srjtest2",
+    "resourceGroupName": "{{ rgname }}",
     "encryptStorage": true
   },
   "general": {
-    "credentialName": "t3ddepcredentials",
-    "name": "srjtest2"
+    "credentialName": "{{ t3cred }}",
+    "name": "{{ clusname }}"
   },
   "placement": {
     "region": "Australia East"
@@ -18,7 +18,7 @@
   },
   "cluster": {
     "ambari": {
-      "blueprintName": "hdfs-hbase-yarn-grafana-logsearch",
+      "blueprintName": "{{ bpname }}",
       "platformVersion": "HDP 3.1",
       "ambariStackDetails": {
         "version": "3.1",
@@ -41,7 +41,7 @@
         "ssoType": "NONE"
       },
       "userName": "admin",
-      "password": "",
+      "password": "{{ ambaripwd }}",
       "validateBlueprint": false,
       "ambariSecurityMasterKey": "",
       "ambariStackDetails": {
@@ -49,25 +49,25 @@
         "version": "3.1",
         "os": "redhat7",
         "stackRepoId": "HDP-3.1",
-        "stackBaseURL": "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0",
+        "stackBaseURL": "{{ hdprepourl }}",
         "utilsRepoId": "HDP-UTILS-1.1.0.22",
-        "utilsBaseURL": "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7",
+        "utilsBaseURL": "{{ hdputilurl }}",
         "enableGplRepo": false,
         "verify": true,
         "repositoryVersion": "3.1.0.0-78",
-        "versionDefinitionFileUrl": "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-78.xml",
+        "versionDefinitionFileUrl": "{{ vdfurl }}",
         "mpacks": []
       },
       "ambariRepoDetailsJson": {
         "version": "2.7.3.0",
-        "baseUrl": "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0"
+        "baseUrl": "{{ ambarirepourl }}"
       },
       "kerberos": {
-        "password": "",
-        "principal": "ambari/admin@EXAMPLE.COM",
-        "url": "10.50.0.69",
-        "adminUrl": "10.50.0.69",
-        "realm": "EXAMPLE.COM",
+        "password": "{{ krbpwd }}",
+        "principal": "{{ krbspn }}",
+        "url": "{{ kdcip }}",
+        "adminUrl": "{{ kdcip }}",
+        "realm": "{{ realm }}",
         "ldapUrl": "",
         "containerDn": "",
         "tcpAllowed": true,
@@ -78,14 +78,14 @@
     },
     "cloudStorage": {},
     "rdsConfigNames": [
-      "myambaridb",
-      "myhivedb",
-      "myrangerdb"
+      "{{ extambdb}}",
+      "{{ exthivedb }}",
+      "{{ extrangerdb }}"
     ]
   },
   "imageSettings": {
-    "imageCatalog": "mycustomcatalog",
-    "imageId": "c08fb21d-3fa6-46c1-4b41-7a4c2dd40b88"
+    "imageCatalog": "{{ imgcatalog }}",
+    "imageId": "{{ imguuid }}"
   },
   "imageType": "prewarmed",
   "instanceGroups": [
@@ -308,14 +308,14 @@
   ],
   "network": {
     "parameters": {
-      "subnetId": "xaea3sub2703191930",
+      "subnetId": "{{ subnet }}",
       "noPublicIp": true,
       "noFirewallRules": true,
-      "resourceGroupName": "xaea3RG2703191929",
-      "networkId": "xaea3vnet2703191930"
+      "resourceGroupName": "{{ nwrgname }}",
+      "networkId": "{{ vnet }}"
     }
   },
   "stackAuthentication": {
-    "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA44aHHKFLmNZwrMha2ASr59QQvwA5WtsUpBFjE4mrnInw78t5chevrDuqvwx8zbrFvaCRRbat+V5waUWoj7VbrDfzpQEar4Ny9yV7+Tu9X/S144eUUtP2Svb/GJBD68MLFoHFgGrCQuyTFQP73qWD1+AY7naGmxyh/kqHt+odyFNCPrNmQJ+YnP78UTty/jLBLN//UDXChmOEYWNnMjvbyi+BVzsuHFr5zVOowXh7dHyfLWZa5E211ybH86EM0bhLr0BSDrBE3PMjVoTqxplCpIyVTQMBThpy7YQyTs+MtZjtypLJerqUmawaJ1yySMR11gMqrAKh2lp+FtlD+teuiQ== rsa-key-20190417"
+    "publicKey": "{{ pubkey }}"
   }
 }
