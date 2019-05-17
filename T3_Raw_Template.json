@@ -1,0 +1,322 @@
+
+{
+  "inputs": {},
+  "parameters": {
+    "resourceGroupName": "",
+    "encryptStorage": true
+  },
+  "general": {
+    "credentialName": "",
+    "name": ""
+  },
+  "placement": {
+    "region": "Australia East"
+  },
+  "tags": {
+    "userDefinedTags": {
+      "AutoDelete": "No"
+    }
+  },
+  "cluster": {
+    "ambari": {
+      "blueprintName": "{{ bpname }}",
+      "platformVersion": "HDP 3.1",
+      "ambariStackDetails": {
+        "version": "3.1",
+        "verify": false,
+        "enableGplRepo": false,
+        "stack": "HDP",
+        "stackOs": "centos7",
+        "mpacks": []
+      },
+      "gateway": {
+        "enableGateway": true,
+        "topologies": [
+          {
+            "topologyName": "dp-proxy",
+            "exposedServices": [
+              "ALL"
+            ]
+          }
+        ],
+        "ssoType": "NONE"
+      },
+      "userName": "admin",
+      "password": "{{ ambaripwd }}",
+      "validateBlueprint": false,
+      "ambariSecurityMasterKey": "",
+      "ambariStackDetails": {
+        "stack": "HDP-3.1",
+        "version": "3.1",
+        "os": "redhat7",
+        "stackRepoId": "HDP-3.1",
+        "stackBaseURL": "{{ hdprepourl }}",
+        "utilsRepoId": "HDP-UTILS-1.1.0.22",
+        "utilsBaseURL": "{{ hdputilurl }}",
+        "enableGplRepo": false,
+        "verify": true,
+        "repositoryVersion": "3.1.0.0-78",
+        "versionDefinitionFileUrl": "{{ vdfurl }}",
+        "mpacks": []
+      },
+      "ambariRepoDetailsJson": {
+        "version": "2.7.3.0",
+        "baseUrl": "{{ ambarirepourl }}"
+      },
+      "kerberos": {
+        "password": "{{ krbpwd }}",
+        "principal": "{{ krbspn }}",
+        "url": "{{ kdcip }}",
+        "adminUrl": "{{ kdcip }}",
+        "realm": "{{ realm }}",
+        "ldapUrl": "",
+        "containerDn": "",
+        "tcpAllowed": true,
+        "descriptor": "",
+        "krb5Conf": ""
+      },
+      "enableSecurity": true
+    },
+    "cloudStorage": {},
+    "rdsConfigNames": [
+      "{{ extambdb}}",
+      "{{ exthivedb }}",
+      "{{ extrangerdb }}"
+    ]
+  },
+  "imageSettings": {
+    "imageCatalog": "{{ imgcatalog }}",
+    "imageId": "{{ imguuid }}"
+  },
+  "imageType": "prewarmed",
+  "instanceGroups": [
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master1-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master1",
+      "type": "GATEWAY",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master2-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master2",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master3-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master3",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master4-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master4",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master5-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D12_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master5",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master6_7-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master6_7",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-master8_9-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "master8_9",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-worker-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "worker",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    },
+    {
+      "parameters": {
+        "availabilitySet": {
+          "name": "srjcluster-edge-as",
+          "faultDomainCount": 2,
+          "updateDomainCount": 20
+        }
+      },
+      "template": {
+        "parameters": {
+          "managedDisk": true
+        },
+        "instanceType": "Standard_D3_v2",
+        "volumeType": "Standard_LRS",
+        "volumeCount": 1,
+        "volumeSize": 100,
+        "rootVolumeSize": 30
+      },
+      "nodeCount": 1,
+      "group": "edge",
+      "type": "CORE",
+      "recoveryMode": "MANUAL",
+      "recipeNames": []
+    }
+  ],
+  "network": {
+    "parameters": {
+      "subnetId": "{{ subnet }}",
+      "noPublicIp": true,
+      "noFirewallRules": true,
+      "resourceGroupName": "{{ nwrgname }}",
+      "networkId": "{{ vnet }}"
+    }
+  },
+  "stackAuthentication": {
+    "publicKey": "{{ pubkey }}"
+  }
+}
