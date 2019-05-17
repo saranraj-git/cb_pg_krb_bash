@@ -1,12 +1,12 @@
 {
   "inputs": {},
   "parameters": {
-    "resourceGroupName": "{{ rgname }}",
+    "resourceGroupName": .RGNAME,
     "encryptStorage": true
   },
   "general": {
-    "credentialName": "{{ t3cred }}",
-    "name": "{{ clusname }}"
+    "credentialName": .T3CRED,
+    "name": .CLUSNAME
   },
   "placement": {
     "region": "Australia East"
@@ -18,7 +18,7 @@
   },
   "cluster": {
     "ambari": {
-      "blueprintName": "{{ bpname }}",
+      "blueprintName": .BPNAME,
       "platformVersion": "HDP 3.1",
       "ambariStackDetails": {
         "version": "3.1",
@@ -41,7 +41,7 @@
         "ssoType": "NONE"
       },
       "userName": "admin",
-      "password": "{{ ambaripwd }}",
+      "password": .AMBARIPWD,
       "validateBlueprint": false,
       "ambariSecurityMasterKey": "",
       "ambariStackDetails": {
@@ -49,25 +49,25 @@
         "version": "3.1",
         "os": "redhat7",
         "stackRepoId": "HDP-3.1",
-        "stackBaseURL": "{{ hdprepourl }}",
+        "stackBaseURL": .HDPREPOURL,
         "utilsRepoId": "HDP-UTILS-1.1.0.22",
-        "utilsBaseURL": "{{ hdputilurl }}",
+        "utilsBaseURL": .HDPUTILURL,
         "enableGplRepo": false,
         "verify": true,
         "repositoryVersion": "3.1.0.0-78",
-        "versionDefinitionFileUrl": "{{ vdfurl }}",
+        "versionDefinitionFileUrl": .VDFURL,
         "mpacks": []
       },
       "ambariRepoDetailsJson": {
         "version": "2.7.3.0",
-        "baseUrl": "{{ ambarirepourl }}"
+        "baseUrl": .AMBARIREPOURL
       },
       "kerberos": {
-        "password": "{{ krbpwd }}",
-        "principal": "{{ krbspn }}",
-        "url": "{{ kdcip }}",
-        "adminUrl": "{{ kdcip }}",
-        "realm": "{{ realm }}",
+        "password": .KRBPWD,
+        "principal": .KRBSPN,
+        "url": .KDCIP,
+        "adminUrl": .KDCIP,
+        "realm": .REALM,
         "ldapUrl": "",
         "containerDn": "",
         "tcpAllowed": true,
@@ -78,14 +78,12 @@
     },
     "cloudStorage": {},
     "rdsConfigNames": [
-      "{{ extambdb}}",
-      "{{ exthivedb }}",
-      "{{ extrangerdb }}"
+      .EXTAMBARIDB
     ]
   },
   "imageSettings": {
-    "imageCatalog": "{{ imgcatalog }}",
-    "imageId": "{{ imguuid }}"
+    "imageCatalog": .IMGCATALOG,
+    "imageId": .IMGUUID
   },
   "imageType": "prewarmed",
   "instanceGroups": [
@@ -308,14 +306,14 @@
   ],
   "network": {
     "parameters": {
-      "subnetId": "{{ subnet }}",
+      "subnetId": .SUBNET,
       "noPublicIp": true,
       "noFirewallRules": true,
-      "resourceGroupName": "{{ nwrgname }}",
-      "networkId": "{{ vnet }}"
+      "resourceGroupName": .NWRGNAME,
+      "networkId": .VNET
     }
   },
   "stackAuthentication": {
-    "publicKey": "{{ pubkey }}"
+    "publicKey": .PUBKEY
   }
 }
