@@ -1,10 +1,39 @@
 #!/usr/bin/env bash
 : '
-This script helps in launching the HDP/HDF clusters through cloudbreak
+This script helps in launching the HDP/HDF clusters through cloudbreak 
+It needs to be executed on the Cloudbreak VM
+
 Pre-requisites:
-Cloudbreak UI need to be up and running fine
-Cloudbreak must have Azure Credentials added (Azure App Key) with the contributor role
-Cloudbreak must have necessary databases for HDP/HDF components
+
+    -	T2 components (Cloudbreak, MIT KDC, Postgres) must be up and running.
+    -	Cloudbreak integrated with Azure App Key of T3 subscription.
+    -	Cloudbreak must be integrated with Postgres VM in T2.
+    -	Repo for Ambari, HDP, HDP Utils, HDF, m-pack must be available in the Artifactory
+    -	Cloudbreak Image need to be available in the blob storage and accessible to Cloudbreak VM
+    -	Ambari Blueprint need to be stored in the artifactory accessible to Cloudbreak VM.
+    -	Cloudbreak template need to be stored in the artifactory accessible to Cloudreak VM.
+    -   epel release package need to be installed on this Cloudbreak VM
+    -   python-pip package need to be available to install on this Cloudbreak VM
+    -   Jinja2 CLI package need to be available for JSON parsing - using the command "pip install j2cli"
+
+Input Parameters required for this script
+
+    -	Cloudbreak Web UI (Tier2) – Username
+    -	Cloudbreak Web UI (Tier2) - Password
+    -	Ambari Blueprint URL for HDP cluster from Artifactory
+    -	Ambari WebUI password
+    -	Kerberos SPN (principal Name which has admin privileges in KDC)
+    -	Kerberos SPN password
+    -	Kerberos REALM name
+    -	MIT-KDC VM - IPaddress
+    -	HDP Repo URL from Artifactory
+    -	HDP-Utils Repo URL from Artifactory
+    -	HDP VDF URL from Artifactory
+    -	Ambari Repo URL from Artifactory
+    -	T3 VNet Name 
+    -	T3 Subnet Name 
+    -	T3 Network Resource Group Name
+
 Components required:
 1. Cloudbreak Instance details
 2. Cloudbreak WebUI along with their credentials
@@ -12,60 +41,6 @@ Components required:
 4. Azure ARM template file for provisioning the servers
 5. Image catalog for the Instances being provisioned by cloudbreak
 6. JQ file url - for JSON query processing
-
-Pre-requisites:
-
-•	T2 components (Cloudbreak, MIT KDC, Postgres) must be up and running.
-•	Cloudbreak integrated with Azure App Key of T3 subscription.
-•	Cloudbreak must be integrated with Postgres VM in T2.
-•	Repo for Ambari, HDP, HDP Utils, HDF, m-pack must be available in the Artifactory
-•	Cloudbreak Image need to be available in the blob storage and accessible to Cloudbreak VM
-•	Ambari Blueprint need to be stored in the artifactory accessible to Cloudbreak VM.
-•	Cloudbreak template need to be stored in the artifactory accessible to Cloudreak VM.
-
-In T3 DevOps Pipeline:
-
-•	Hwx bash script for Postgres DB Registration with Cloudbreak requires the following parameters as input. (Need to be executed on Postgres VM in T2)
-        o	Postgres DB - UserName
-        o	Postgres DB - password
-        o	CB utility file url from Artifactory
-        o	Cloudbreak VM – IP address
-        o	Cloudbreak Web UI – username
-        o	Cloudbreak Web UI – Password
-        o	JQ file URL from Artifactory
-•	Hwx bash script for HDP Cluster Creation requires the following mandatory parameters as input. (Need to be executed on Cloudbreak VM in T2)
-        o	Cloudbreak Web UI (Tier2) – Username
-        o	Cloudbreak Web UI (Tier2) - Password
-        o	Ambari Blueprint URL for HDP cluster from Artifactory
-        o	Ambari WebUI password
-        o	Kerberos SPN (principal Name which has admin privileges in KDC)
-        o	Kerberos SPN password
-        o	Kerberos REALM name
-        o	MIT-KDC VM - IPaddress
-        o	HDP Repo URL from Artifactory
-        o	HDP-Utils Repo URL from Artifactory
-        o	HDP VDF URL from Artifactory
-        o	Ambari Repo URL from Artifactory
-        o	T3 VNet Name (eg: xaea3vnet2703191930)
-        o	T3 Subnet Name (eg: xaea3sub2703191930)
-        o	T3 Network Resource Group Name (eg: xaea3RG2703191929)
-•	Hwx bash script for HDF Cluster Creation requires the following mandatory parameters as input. (Need to be executed on Cloudbreak VM in T2)
-        o	Cloudbreak Web UI (Tier2) – Username
-        o	Cloudbreak Web UI (Tier2) - Password
-        o	Ambari Blueprint URL for HDF cluster from Artifactory
-        o	Ambari WebUI password
-        o	Kerberos SPN (principal Name which has admin privileges in KDC)
-        o	Kerberos SPN password
-        o	Kerberos REALM name
-        o	MIT-KDC VM - IPaddress
-        o	HDF Repo URL from Artifactory
-        o	HDF – Ambari mpack URL from Artifactory
-        o	Ambari Repo URL from Artifactory
-        o	T3 VNet Name (eg: xaea3vnet2703191930)
-        o	T3 Subnet Name (eg: xaea3sub2703191930)
-        o	T3 Network Resource Group Name (eg: xaea3RG2703191929)
-
-
 
 '
 #cbutilpath=$1        # "http://artifactory/cb"
@@ -76,8 +51,12 @@ arm_url=$4    # "http://artifactory/var/lib/cloudbreak-deployment/t3arm.json"   
 cbusername=$1 # "cbadmin@example.com"  # This variable will be parametrized in the future release
 cbpwd=$2      # "some secure pwd from DevOps "   #This variable will be parametrized in the future release
 
+# Mandatory parameters for this script
 
-start_script()
+
+tstmp=$(date "+%Y%m%d%H%M%S")
+tempcbt="/tmp/tmpcbtemplate.json"
+0_start_script()
 {
     if [ -d "/var/log/hwx/" ]; then
         echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/create_cluster.log
@@ -97,10 +76,9 @@ exit_script()
     exit 1
 }
 
-install_Cb()
+1_install_cb_jq()
 {
     if [[ ! -f /bin/cb ]]; then
-    # https://s3-us-west-2.amazonaws.com/cb-cli/cb-cli_2.9.0_Linux_x86_64.tgz
         if [[ $(wget $cbutilpath -O /bin/cb && chmod +x /bin/cb) -eq 0 ]];then
             add_log "CB utility downloaded successfully"
             if [[ $(cb configure --server $cb_web_url --username $cbusername --password $cbpwd) -eq 0 ]];then
@@ -121,6 +99,7 @@ install_Cb()
     fi 
     add_log "Checking JQ ...."
     if [[ ! -f /bin/jq ]]; then
+        add_log "JQ not installed on this machine"
         if [[ $(wget $jqurl -O /bin/jq && chmod +x /bin/jq) ]]; then
             add_log "Installed JQ version - $(jq --version)"
         else
@@ -129,6 +108,63 @@ install_Cb()
     else
         add_log "JQ already installed - $(jq --version)"
     fi
+}
+
+2_export_cb_template()
+{
+    if [[ $(wget $cbtemplateurl -O $tempcbt) -eq 0 ]]; then
+        #add_log "Cloudbreak Template downloaded successfully"
+        #export tempcbt=$(cat /tmp/tmpcbtemplate.json)
+        [[ -s "$tempcbt" ]] && add_log "Cloudbreak Template downloaded successfully with contents" || exit_script "Cloudbreak template received is empty"
+    else 
+        exit_script "Unable to download Cloudbreak template from artifactory"
+    fi
+
+}
+update_cb_template()
+{
+    if [[ $() -eq 0 ]]; then
+        tempcbtvar=$(cat $tempcbt | jq '$1 = "$2"')
+    add_log ""
+    else 
+        exit_script ""
+    fi
+
+    
+}
+
+get_pipeline_param()
+{
+    export clusname="hdpcluster$tstmp"  #"testclusterhdp"
+    export rgname=$clusname    # eg: "testclusterhdp"
+    if [[ $(cb credential list | jq '.[].Name' | cut -f2 -d '"') -eq 0 ]]; then
+        add_log "Azure Credential name registered with Cloudbreak - retrieved successfully"
+        crname=$(cb credential list | jq '.[].Name' | cut -f2 -d '"')
+        export t3cred=$crname   #"t3ddepcredentials"
+    else 
+        exit_script "Failed to get the Azure App Key registration name from Cloudbreak"
+    fi
+        
+    
+    export ambaripwd=$5  # "secure password for ambari through dev ops pipeline"
+    export krbpwd=$6     # "secure password for kerberos through dev ops pipeline"
+    export krbspn=$7     # kerberos service principal eg: ambari/admin@EXAMPLE.COM"
+    export kdcip=$8      # Kerberos KDC IP
+    export kadminip=$8   # Kerberos Kadmin IP
+    export realm=$9      # Realm name
+    export hdprepourl=$10  # HDP repo URL from artifactory eg: "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0"
+    export hdputilurl=$11 # HDP util repo url from artifactory eg: "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7"
+    export vdfurl=$12   # Version definition file from artifactory eg : "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-78.xml"
+    export ambarirepourl=$13 # Ambari repo url from artifactory eg: "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0"
+    export extambdb="myambaridb" #Ambari DB for the cluster
+    export exthivedb="myhivedb"  #Hive DB for the cluster
+    export extrangerdb="myrangerdb"  #ranger db for the cluster
+    export imgcatalog="mycustomcatalog" #custom image catalog registered with cloudbreak
+    export imguuid="c08fb21d-3fa6-46c1-4b41-7a4c2dd40b88"  #custom image UUID registered with cloudbreak
+    export subnet=$14  # subnet id in Tier 3 to be utilized for the cluster eg:"xaea3sub2703191930"
+    export nwrgname=$15 # network resource group name in Tier 3 eg : xaea3RG2703191929
+    export vnet=$16  # Vnet in Tier 3"xaea3vnet2703191930"
+    export pubkey=$17 # public key for ssh access to the T3 instances getting created 
 }
 
 get_arm()
@@ -155,6 +191,7 @@ register_blueprint()
         val=$(cb blueprint list | jq '.[] | {"Name"}' | grep "Name" | cut -f4 -d'"' | grep myhdpbp)
         if [[ $val ]]; then
             add_log "Blueprint registered successfully (Blueprint name - $val)"
+            export bpname=$4   #"hdfs-hbase-yarn-grafana-logsearch"
         else
             exit_script "Blueprint validation failed with CB"
         fi
@@ -202,3 +239,4 @@ get_arm
 register_blueprint
 create_cluster
 get_cluster_status
+
