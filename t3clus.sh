@@ -2,9 +2,7 @@
 : '
 This script helps in launching the HDP/HDF clusters through cloudbreak 
 It needs to be executed on the Cloudbreak VM
-
 Pre-requisites:
-
     -	T2 components (Cloudbreak, MIT KDC, Postgres) must be up and running.
     -	Cloudbreak integrated with Azure App Key of T3 subscription.
     -	Cloudbreak must be integrated with Postgres VM in T2.
@@ -15,9 +13,7 @@ Pre-requisites:
     -   epel release package need to be installed on this Cloudbreak VM
     -   python-pip package need to be available to install on this Cloudbreak VM
     -   Jinja2 CLI package need to be available for JSON parsing - using the command "pip install j2cli"
-
 Input Parameters required for this script
-
     -	Cloudbreak Web UI (Tier2) – Username
     -	Cloudbreak Web UI (Tier2) - Password
     -	Ambari Blueprint URL for HDP cluster from Artifactory
@@ -33,7 +29,6 @@ Input Parameters required for this script
     -	T3 VNet Name 
     -	T3 Subnet Name 
     -	T3 Network Resource Group Name
-
 Components required:
 1. Cloudbreak Instance details
 2. Cloudbreak WebUI along with their credentials
@@ -41,22 +36,28 @@ Components required:
 4. Azure ARM template file for provisioning the servers
 5. Image catalog for the Instances being provisioned by cloudbreak
 6. JQ file url - for JSON query processing
-
 '
-#cbutilpath=$1        # "http://artifactory/cb"
-cb_web_url="https://$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)"        # "https://cbvm.com"
-#jqurl=$3             # "http://artifactory/jq"
+        # "http://artifactory/cb"
+        # "https://cbvm.com"
+          # "http://artifactory/jq"
 Blueprint=$3  # "http://artifactory/var/lib/cloudbreak-deployment/hdpbp.json"         # "http://artifactory/hdpblueprint.json"
 arm_url=$4    # "http://artifactory/var/lib/cloudbreak-deployment/t3arm.json"        # "http://artifactory/t3-arm-template.json"
 cbusername=$1 # "cbadmin@example.com"  # This variable will be parametrized in the future release
 cbpwd=$2      # "some secure pwd from DevOps "   #This variable will be parametrized in the future release
 
 # Mandatory parameters for this script
-
-
+cb_web_url="https://$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)"
+cbutilpath=$1
+jqurl=$2
+cbusrname=$3
+cbpwd=$4
+cbjqtemplate=$5
+cbjqtemplatepath="/tmp/.cbjqtmp.json"
+cbinputtemplate=$6
+cbinputtemplatepath="/tmp/.cbinputtemplate.json"
 tstmp=$(date "+%Y%m%d%H%M%S")
-tempcbt="/tmp/tmpcbtemplate.json"
-0_start_script()
+
+start_script_0()
 {
     if [ -d "/var/log/hwx/" ]; then
         echo `date "+%Y-%m-%d %H:%M:%S : Script Execution started"` >> /var/log/hwx/create_cluster.log
@@ -76,12 +77,12 @@ exit_script()
     exit 1
 }
 
-1_install_cb_jq()
+install_cb_jq_1()
 {
     if [[ ! -f /bin/cb ]]; then
         if [[ $(wget $cbutilpath -O /bin/cb && chmod +x /bin/cb) -eq 0 ]];then
             add_log "CB utility downloaded successfully"
-            if [[ $(cb configure --server $cb_web_url --username $cbusername --password $cbpwd) -eq 0 ]];then
+            if [[ $(cb configure --server $cb_web_url --username $cbusrname --password $cbpwd) -eq 0 ]];then
                 add_log "CB configured succcessfully with Cloudbreak VM"
             else
                 exit_script "Unable to configure CB Utility with Cloudbreak"
@@ -110,28 +111,39 @@ exit_script()
     fi
 }
 
-2_export_cb_template()
+get_cb_template_2()
 {
-    if [[ $(wget $cbtemplateurl -O $tempcbt) -eq 0 ]]; then
-        #add_log "Cloudbreak Template downloaded successfully"
-        #export tempcbt=$(cat /tmp/tmpcbtemplate.json)
-        [[ -s "$tempcbt" ]] && add_log "Cloudbreak Template downloaded successfully with contents" || exit_script "Cloudbreak template received is empty"
+    if [[ $(wget $cbjqtemplate -O $cbjqtemplatepath) -eq 0 ]] && [[ $(wget $cbinputtemplate -O $cbinputtemplatepath) -eq 0 ]]; then
+        [[ -s "$cbjqtemplatepath" ]] && add_log "Cloudbreak Template downloaded successfully with contents" || exit_script "Cloudbreak template downloaded as empty"
+        [[ -s "$cbinputtemplatepath" ]] && add_log "Cloudbreak input Template downloaded successfully with contents" || exit_script "Cloudbreak input template downloaded as empty"
     else 
         exit_script "Unable to download Cloudbreak template from artifactory"
     fi
-
 }
-update_cb_template()
+
+
+update_cb_input_template()
 {
-    if [[ $() -eq 0 ]]; then
-        tempcbtvar=$(cat $tempcbt | jq '$1 = "$2"')
-    add_log ""
+    #if [[ $(jq --arg val "$2" --arg key "$1" '.[$key] = $val' /tmp/input.json > /tmp/.mytmp) -eq 0 ]] && [[ $(mv /tmp/.mytmp /tmp/input.json -f) -eq 0 ]]; then
+    if [[ $(jq --arg val "$2" --arg key "$1" '.[$key] = $val' $cbinputtemplatepath > /tmp/.mytmp) -eq 0 ]] && [[ $(mv /tmp/.mytmp $cbinputtemplatepath -f) -eq 0 ]]; then
+        jq --arg key "$1" '.[$key]' $cbinputtemplatepath | cut -f2 -d'"' > /tmp/.aftr
+            if [[ $2 == "$(cat /tmp/.aftr)" ]]; then
+                add_log "Value of $1 updated in the input template successfully"
+                rm -f /tmp/.aftr
+                #export env_$1=$2
+            else
+                exit_script "Unable to update the value of $1 in the input template"
+            fi 
     else 
-        exit_script ""
+        exit_script "Failed to update the value of $1"
     fi
-
-    
 }
+
+#start_script_0
+#cbinputtemplatepath="/tmp/input.json"
+#update_cb_input_template "KDCIP" "1.2.3.4"
+
+
 
 get_pipeline_param()
 {
@@ -233,10 +245,10 @@ get_cluster_status()
 
 
 
-start_script
-install_Cb
-get_arm
-register_blueprint
-create_cluster
-get_cluster_status
+#start_script
+#install_Cb
+#get_arm
+#register_blueprint
+#create_cluster
+#get_cluster_status
 
