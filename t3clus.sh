@@ -426,6 +426,8 @@ cleanup_11()
     rm -f /tmp/*.json
 }
 
+
+if [ $# -eq 21 ]; then
 start_script_0
 install_cb_jq_1
 get_cb_template_2
@@ -439,4 +441,6 @@ create_cluster_9
 get_cluster_status_10
 cleanup_11
 
-
+else
+    exit_script "This script requires 21 arguments : ./myscript.sh <postgres-server-fqdn>"
+fi
