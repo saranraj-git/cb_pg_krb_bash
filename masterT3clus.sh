@@ -34,6 +34,8 @@ Parameter 18 : T3 Subnet Name
 Parameter 19 : T3 Network Resource Group Name
 Parameter 20 : T3 VNet Name
 Parameter 21 : Public Key for VM login
+Parameter 22 : Postgres server username
+Parameter 23 : Postgres Password
 '
 
 # Mandatory parameters for this script
