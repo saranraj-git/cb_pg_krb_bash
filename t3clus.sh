@@ -173,100 +173,160 @@ get_pipeline_param_3() # Testing completed
     add_log "Updating the pipeline parameters to the input file"
     
     update_cb_input_template "CLUSNAME" $clusname
-    export HWX_CLUSNAME="$clusname"    # eg: "mycluster name in T3"
+    #export HWX_CLUSNAME="$clusname"    # eg: "mycluster name in T3"
     update_cb_input_template "RGNAME" $clusname
-    export HWX_RGNAME="$clusname"    # eg: "my resource group name in T3"
+    #export HWX_RGNAME="$clusname"    # eg: "my resource group name in T3"
 
     update_cb_input_template "AMBARIPWD"  "$1"
-    export HWX_AMBARIPWD="$1"  # $5  # "secure password for ambari through dev ops pipeline"
+    #export HWX_AMBARIPWD="$1"  # $5  # "secure password for ambari through dev ops pipeline"
     
     update_cb_input_template "KRBSPN" "$2"
-    export HWX_KRBSPN="$2" # $7     # kerberos service principal eg: ambari/admin@EXAMPLE.COM"
+    #export HWX_KRBSPN="$2" # $7     # kerberos service principal eg: ambari/admin@EXAMPLE.COM"
     
     update_cb_input_template "KRBPWD" "$3"
-    export HWX_KRBPWD="$3" # $6     # "secure password for kerberos through dev ops pipeline"
+    #export HWX_KRBPWD="$3" # $6     # "secure password for kerberos through dev ops pipeline"
     
     update_cb_input_template "KDCIP" "$4"
-    export HWX_KDCIP="$4" # $8      # Kerberos KDC IP
+    #export HWX_KDCIP="$4" # $8      # Kerberos KDC IP
     
     update_cb_input_template "KADMINIP" "$4" 
-    export HWX_KADMINIP="$4" # $8   # Kerberos Kadmin IP
+    #export HWX_KADMINIP="$4" # $8   # Kerberos Kadmin IP
     
     update_cb_input_template "REALM" "$5"
-    export HWX_REALM="$5"  # $9      # Realm name
+    #export HWX_REALM="$5"  # $9      # Realm name
     
     update_cb_input_template "HDPREPOURL" "$6"
-    export HWX_HDPREPOURL="$6"  # HDP repo URL from artifactory eg: "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0"
+    #export HWX_HDPREPOURL="$6"  # HDP repo URL from artifactory eg: "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0"
     
     update_cb_input_template "HDPUTILURL" "$7"
-    export HWX_HDPUTILURL="$7" # HDP util repo url from artifactory eg: "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7"
+    #export HWX_HDPUTILURL="$7" # HDP util repo url from artifactory eg: "http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7"
     
     update_cb_input_template "VDFURL" "$8"
-    export HWX_VDFURL="$8"   # Version definition file from artifactory eg : "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-78.xml"
+    #export HWX_VDFURL="$8"   # Version definition file from artifactory eg : "http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-78.xml"
     
     update_cb_input_template "AMBARIREPOURL" "$9"
-    export HWX_AMBARIREPOURL="$9" # Ambari repo url from artifactory eg: "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0"
+    #export HWX_AMBARIREPOURL="$9" # Ambari repo url from artifactory eg: "http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0"
     
     update_cb_input_template "SUBNET" "${10}"
-    export HWX_SUBNET="${10}"  # subnet id in Tier 3 to be utilized for the cluster eg:"xaea3sub2703191930"
+    #export HWX_SUBNET="${10}"  # subnet id in Tier 3 to be utilized for the cluster eg:"xaea3sub2703191930"
     
     update_cb_input_template "NWRGNAME" "${11}"
-    export HWX_NWRGNAME="${12}" # network resource group name in Tier 3 eg : xaea3RG2703191929
+    #export HWX_NWRGNAME="${12}" # network resource group name in Tier 3 eg : xaea3RG2703191929
     
     update_cb_input_template "VNET" "${12}"
-    export HWX_VNET="${12}"  # Vnet in Tier 3"xaea3vnet2703191930"
+    #export HWX_VNET="${12}"  # Vnet in Tier 3"xaea3vnet2703191930"
     
     update_cb_input_template "PUBKEY" "${13}"
-    export HWX_PUBKEY="${13}" # public key for ssh access to the T3 instances getting created 
+    #export HWX_PUBKEY="${13}" # public key for ssh access to the T3 instances getting created 
 }
 
-start_script_0
-install_cb_jq_1
-get_cb_template_2
-# get_pipeline_param "superAmbPWD" "admin/ambari" "superKRBPwd" "kdc.ip.address" "ddep.com" "http://hdprepo.com" "http://hdputilrepo" "http://vdfurl" "http://ambarirepo" "t3subnet" "t3NwRG" "t3vnet" "pubkey_securedone"
-get_pipeline_param_3 "$s_amb_pwd" "$s_krb_princ" "$s_krb_pwd" "$s_kdc_ip" "$s_realm" "$s_hdp_repo" "$s_hdp_util_repo" "$s_vdf_url" "$s_ambari_repo" "$s_subnet" "$s_nwrg" "$s_vnet" "$s_pubkey" 
 
-from_cb_util()  # requires Testing on cb machine
+from_cb_util_4()  # requires Testing on cb machine
 {
     if [[ $(cb credential list | jq '.[].Name' | cut -f2 -d '"') -eq 0 ]]; then
-        add_log "Azure Credential name registered with Cloudbreak - retrieved successfully"
         crname=$(cb credential list | jq '.[].Name' | cut -f2 -d '"')
-        update_cb_input_template "T3CRED" $crname
-        export HWX_T3CRED=$crname   #"some azure reg name"
+        if [[ $crname ]];then
+            update_cb_input_template "T3CRED" $crname
+            #export HWX_T3CRED=$crname   #"some azure reg name"
+            add_log "Azure Credential name registered with Cloudbreak - retrieved successfully"
+        else
+            exit_script "Failed to get the Azure App Key registration name from Cloudbreak"
+        fi
     else 
         exit_script "Failed to get the Azure App Key registration name from Cloudbreak"
     fi
     
     if [[ $(cb database list) -eq 0 ]]; then
-        add_log "Database retrieved successfully"
-        export HWX_EXTAMBDB="myambaridb" #Ambari DB for the cluster
-        update_cb_input_template "EXTAMBARIDB" 
+        if [[ $(cb database list -output table | grep AMBARI | cut -f2 -d"|") -eq 0 ]]; then
+            ambdb=$(cb database list -output table | grep AMBARI | cut -f2 -d"|")
+            if [[ $ambdb ]];then 
+                #export HWX_EXTAMBDB="$ambdb" #Ambari DB for the cluster
+                update_cb_input_template "EXTAMBARIDB" $ambdb
+                add_log "Ambari database name - registered with Cloudbreak, retrieved successfully"
+            else
+                exit_script "Unable to retrieve Ambari db name registered with cloudbreak"
+            fi
+        else
+            exit_script "No external DB registered with Cloudbreak for Ambari"
+        fi
+        
+        : '
+        if [[ $(cb database list -output table | grep HIVE | cut -f2 -d"|") -eq 0 ]]; then
+            hivedb=$(cb database list -output table | grep HIVE | cut -f2 -d"|")
+            if [[ $hivedb ]];then 
+                #export HWX_EXTHIVEDB="$hivedb"  #Hive DB for the cluster
+                update_cb_input_template "EXTHIVEDB" $hivedb
+                add_log "Hive database name - registered with Cloudbreak, retrieved successfully"
+            else
+                exit_script "Unable to retrieve Hive db name registered with cloudbreak"
+            fi
+        else
+            exit_script "No external DB registered with Cloudbreak for Hive"
+        fi
+        
+        if [[ $(cb database list -output table | grep REGISTRY | cut -f2 -d"|") -eq 0 ]]; then
+            registrydb=$(cb database list -output table | grep REGISTRY | cut -f2 -d"|")
+            if [[ $registrydb ]];then 
+                #export HWX_EXTREGISTRYDB="$registrydb"  #ranger db for the cluster
+                update_cb_input_template "EXTREGISTRYDB" $registrydb
+                add_log "Registry database name - registered with Cloudbreak, retrieved successfully"
+            else
+                exit_script "Unable to retrieve Registry db name registered with cloudbreak"
+            fi
+        else
+            exit_script "No external DB registered with Cloudbreak for Registry"
+        fi
 
-        # export HWX_EXTHIVEDB="myhivedb"  #Hive DB for the cluster
-        # update_cb_input_template "EXTHIVEDB" $1
-
-        # export HWX_EXTRANGERDB="myrangerdb"  #ranger db for the cluster
-        # update_cb_input_template "EXTRANGERDB" $2
+        if [[ $(cb database list -output table | grep RANGER | cut -f2 -d"|") -eq 0 ]]; then
+            rangerdb=$(cb database list -output table | grep RANGER | cut -f2 -d"|")
+            if [[ $rangerdb ]];then 
+                #export HWX_EXTRANGERDB="$rangerdb"  #ranger db for the cluster
+                update_cb_input_template "EXTRANGERDB" $rangerdb
+                add_log "Ranger database name - registered with Cloudbreak, retrieved successfully"
+            else
+                exit_script "Unable to retrieve Ranger db name registered with cloudbreak"
+            fi
+        else
+            exit_script "No external DB registered with Cloudbreak for Ranger"
+        fi
+        '
+        # 
+        # 
     else
 	    exit_script "Unable to retrieve external database name registered with Cloudbreak"
     fi
 
+    if [[ $(cb imagecatalog list -output table | grep mycustomcatalog | cut -f2 -d"|") -eq 0 ]]; then
+        imgcat=$(cb imagecatalog list -output table | grep mycustomcatalog | cut -f2 -d"|")
+        if [[ $imgcat ]];then
+            update_cb_input_template "IMGCATALOG" $imgcat
+            #export HWX_IMGCATALOG="$imgcat" #custom image catalog registered with cloudbreak
+            add_log ""
+        else
+            exit_script "Unable to retrieve custom image catalog name registered with cloudbreak"
+        fi
 
-    if [[ $(cb imagecatalog list | jq '.[].') -eq 0 ]]; then
-        export HWX_IMGCATALOG="mycustomcatalog" #custom image catalog registered with cloudbreak
-        update_cb_input_template
-        add_log ""
-
-        export HWX_IMGUUID="c08fb21d-3fa6-46c1-4b41-7a4c2dd40b88"  #custom image UUID registered with cloudbreak
-        update_cb_input_template
-        add_log ""
-
+        imgcaturl=$(cb imagecatalog list -output table | grep mycustomcatalog | cut -f4 -d"|")
+        imgcatpath="/tmp/.cusimgcat.json"
+        if [[ $(wget $imgcaturl -O $imgcatpath) -eq 0 ]] && [[ -s $imgcatpath ]]; then
+            add_log "Retrieved the imagecatalog successfully with contents"
+            imguuid=$(cat $imgcatpath | jq -c '.images."hdp-images"[0].uuid' | cut -f2 -d'"')
+            if [[ $imguuid ]]; then
+                add_log "Image UUID retrieved successfully from the img catalog URL"
+                #export HWX_IMGUUID="$imguuid"  #custom image UUID registered with cloudbreak
+                update_cb_input_template "IMGUUID" $imguuid
+            else
+                exit_script "Unable to retrieve the image UUID"
+            fi
+        else
+            exit_script "Unable to download the image catalog from the URL registered with cloudbreak"
+        fi
     else
-        exit_script "Unable to retrieve Image catalog from Cloudbreak"
+        exit_script "Unable to retrieve custom image catalog name registered with cloudbreak"
     fi
 }
 
-get_bp() 
+get_bp_5() 
 {    
     if [[ $(wget "$bp_url" -O "$bp_path") -eq 0 ]] && [[ -s "$bp_path" ]]; then
         add_log "Ambari Blueprint successfully downloaded under $bp_path"
@@ -275,26 +335,50 @@ get_bp()
     fi
 }
 
-register_blueprint()
+register_blueprint_6()
 {
     add_log "Registering custom HDP Blueprint with Cloudbreak"
     if [[ $(cb blueprint create from-file --name $clusname --file $bp_path) -eq 0 ]]; then
         add_log "Custom HDP Blueprint registered successfully with Cloudbreak"
         add_log "Validating the Blueprint registration using cb command"
-        val=$(cb blueprint list | jq '.[] | {"Name"}' | grep "Name" | cut -f4 -d'"' | grep $clusname)
+        val=$(cb blueprint list | jq '.[].Name' | grep $clusname | cut -f2 -d'"')
         if [[ $val ]]; then
             add_log "Blueprint registered successfully (Blueprint name - $val)"
             export HWX_BPNAME="$clusname"   #"hdfs-hbase-yarn-grafana-logsearch" 
             update_cb_input_template "BPNAME" "$clusname"
         else
-            exit_script "Blueprint validation failed with CB"
+            exit_script "Blueprint registration failed with CB"
         fi
     else 
         exit_script "Custom HDP Blueprint registration failed"
     fi
 }
 
-merge_template()
+validate_input_template_7()
+{
+    [[ $(cat $cbinputtemplatepath | jq '.RGNAME' | cut -f2 -d'"') ]] && add_log "RGNAME passed" || exit_script "RGNAME failed"
+    [[ $(cat $cbinputtemplatepath | jq '.T3CRED' | cut -f2 -d'"') ]] && add_log "T3CRED passed" || exit_script "T3CRED failed"
+    [[ $(cat $cbinputtemplatepath | jq '.CLUSNAME' | cut -f2 -d'"') ]] && add_log "CLUSNAME passed" || exit_script "CLUSNAME failed"
+    [[ $(cat $cbinputtemplatepath | jq '.BPNAME' | cut -f2 -d'"') ]] && add_log "BPNAME passed" || exit_script "BPNAME failed"
+    [[ $(cat $cbinputtemplatepath | jq '.AMBARIPWD' | cut -f2 -d'"') ]] && add_log "AMBARIPWD passed" || exit_script "AMBARIPWD failed"
+    [[ $(cat $cbinputtemplatepath | jq '.HDPREPOURL' | cut -f2 -d'"') ]] && add_log "HDPREPOURL passed" || exit_script "HDPREPOURL failed"
+    [[ $(cat $cbinputtemplatepath | jq '.HDPUTILURL' | cut -f2 -d'"') ]] && add_log "HDPUTILURL passed" || exit_script "HDPUTILURL failed"
+    [[ $(cat $cbinputtemplatepathn | jq '.VDFURL' | cut -f2 -d'"') ]] && add_log "VDFURL passed" || exit_script "VDFURL failed"
+    [[ $(cat $cbinputtemplatepath | jq '.AMBARIREPOURL' | cut -f2 -d'"') ]] && add_log "AMBARIREPOURL passed" || exit_script "AMBARIREPOURL failed"
+    [[ $(cat $cbinputtemplatepath | jq '.KRBPWD' | cut -f2 -d'"') ]] && add_log "KRBPWD passed" || exit_script "KRBPWD failed"
+    [[ $(cat $cbinputtemplatepath | jq '.KRBSPN' | cut -f2 -d'"') ]] && add_log "KRBSPN passed" || exit_script "KRBSPN failed"
+    [[ $(cat $cbinputtemplatepath | jq '.KDCIP' | cut -f2 -d'"') ]] && add_log "KDCIP passed" || exit_script "KDCIP failed"
+    [[ $(cat $cbinputtemplatepath | jq '.REALM' | cut -f2 -d'"') ]] && add_log "REALM passed" || exit_script "REALM failed"
+    [[ $(cat $cbinputtemplatepath | jq '.EXTAMBARIDB' | cut -f2 -d'"') ]] && add_log "EXTAMBARIDB passed" || exit_script "EXTAMBARIDB failed"
+    [[ $(cat $cbinputtemplatepath | jq '.IMGCATALOG' | cut -f2 -d'"') ]] && add_log "IMGCATALOG passed" || exit_script "IMGCATALOG failed"
+    [[ $(cat $cbinputtemplatepath | jq '.IMGUUID' | cut -f2 -d'"') ]] && add_log "IMGUUID passed" || exit_script "IMGUUID failed"
+    [[ $(cat $cbinputtemplatepath | jq '.SUBNET' | cut -f2 -d'"') ]] && add_log "SUBNET passed" || exit_script "SUBNET failed"
+    [[ $(cat $cbinputtemplatepath | jq '.NWRGNAME' | cut -f2 -d'"') ]] && add_log "NWRGNAME passed" || exit_script "NWRGNAME failed"
+    [[ $(cat $cbinputtemplatepath | jq '.VNET' | cut -f2 -d'"') ]] && add_log "VNET passed" || exit_script "VNET failed"
+    [[ $(cat $cbinputtemplatepath | jq '.PUBKEY' | cut -f2 -d'"') ]] && add_log "PUBKEY passed" || exit_script "PUBKEY failed"
+}
+
+merge_template_8()
 {
     if [[ $(cat $cbinputtemplatepath | jq -f $cbjqtemplatepath > $cb_finaltemplate) -eq 0 ]] && [[ -s $cb_finaltemplate ]]; then
 	    add_log "Successfully merged the input template with Cloudbreak Template"
@@ -303,7 +387,11 @@ merge_template()
     fi
 }
 
-create_cluster()
+validate_merged_template_8_1()
+{
+
+}
+create_cluster_9()
 {
     if [[ $(cb cluster create --cli-input-json $cb_finaltemplate --name $clusname) -eq 0 ]]; then
         add_log "Cluster creation command submitted successfully"
@@ -312,7 +400,7 @@ create_cluster()
     fi
 }
 
-get_cluster_status()
+get_cluster_status_10()
 {
     status="Initial"
     add_log "Checking Cluster deployment status....."
@@ -338,10 +426,21 @@ get_cluster_status()
     done
 }
 
-cleanup()
+cleanup_11()
 {
-
+    rm -f /tmp/*.json
 }
 
-0_start_script
-1_install_cb_jq
+start_script_0
+install_cb_jq_1
+get_cb_template_2
+get_pipeline_param_3 "$s_amb_pwd" "$s_krb_princ" "$s_krb_pwd" "$s_kdc_ip" "$s_realm" "$s_hdp_repo" "$s_hdp_util_repo" "$s_vdf_url" "$s_ambari_repo" "$s_subnet" "$s_nwrg" "$s_vnet" "$s_pubkey" 
+from_cb_util_4
+get_bp_5
+register_blueprint_6
+validate_input_template_7
+merge_template_8
+create_cluster_9
+get_cluster_status_10
+cleanup_11
+
