@@ -442,5 +442,6 @@ get_cluster_status_10
 cleanup_11
 
 else
+	start_script_0
     exit_script "This script requires 21 arguments : ./myscript.sh <postgres-server-fqdn>"
 fi
