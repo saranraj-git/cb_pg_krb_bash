@@ -13,40 +13,38 @@ Pre-requisites:
     -   epel release package need to be installed on this Cloudbreak VM
     -   python-pip package need to be available to install on this Cloudbreak VM
     -   Jinja2 CLI package need to be available for JSON parsing - using the command "pip install j2cli"
-Input Parameters required for this script
-    -	Cloudbreak Web UI (Tier2) – Username
-    -	Cloudbreak Web UI (Tier2) - Password
-    -	Ambari Blueprint URL for HDP cluster from Artifactory
-    -	Ambari WebUI password
-    -	Kerberos SPN (principal Name which has admin privileges in KDC)
-    -	Kerberos SPN password
-    -	Kerberos REALM name
-    -	MIT-KDC VM - IPaddress
-    -	HDP Repo URL from Artifactory
-    -	HDP-Utils Repo URL from Artifactory
-    -	HDP VDF URL from Artifactory
-    -	Ambari Repo URL from Artifactory
-    -	T3 VNet Name 
-    -	T3 Subnet Name 
-    -	T3 Network Resource Group Name
-Components required:
-1. Cloudbreak Instance details
-2. Cloudbreak WebUI along with their credentials
-3. Ambari Blueprint for HDP and HDF clusters
-4. Azure ARM template file for provisioning the servers
-5. Image catalog for the Instances being provisioned by cloudbreak
-6. JQ file url - for JSON query processing
+
+Input Parameters required for this script in the same order
+
+Parameter 1 : Cloudbreak VM IP Address
+Parameter 2 : CB file - Artifactory URL
+Parameter 3 : JQ file - Artifactory URL
+Parameter 4 : Cloudbreak Web UI (Tier2) – Username
+Parameter 5 : Cloudbreak Web UI (Tier2) - Password
+Parameter 6 : Customized Cloudbreak JQ Template - Artifactory URL
+Parameter 7 : Customized Cloudbreak Input Template - Artifactory URL
+Parameter 8 : Ambari Blueprint URL for HDP cluster from Artifactory
+Parameter 9 : Ambari WebUI password
+Parameter 10 : Kerberos SPN (principal Name which has admin privileges in KDC) 
+Parameter 11 : Kerberos SPN password
+Parameter 12 : MIT-KDC VM - IPaddress
+Parameter 13 : Kerberos REALM name
+Parameter 14 : HDP Repo URL from Artifactory
+Parameter 15 : HDP-Utils Repo URL from Artifactory
+Parameter 16 : HDP VDF URL from Artifactory
+Parameter 17 : Ambari Repo URL from Artifactory
+Parameter 18 : T3 Subnet Name 
+Parameter 19 : T3 Network Resource Group Name
+Parameter 20 : T3 VNet Name
+Parameter 21 : Public Key for VM login
+
 '
-        # "http://artifactory/cb"
-        # "https://cbvm.com"
-          # "http://artifactory/jq"
- # "http://artifactory/var/lib/cloudbreak-deployment/hdpbp.json"         # "http://artifactory/hdpblueprint.json"
 
 # Mandatory parameters for this script
 
 # CB vm related details
+#cb_web_url="https://$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)"
 
-    #cb_web_url="https://$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)"
 cb_web_url="https://$1"  # $1 Cloudbreak VM IP address
 cbutilpath="http://172.26.201.244/cb"   #  $2 CB file url from artifactory
 jqurl="http://172.26.201.244/jq"   #  $3 JQ file url from artifactory
@@ -356,26 +354,26 @@ register_blueprint_6()
 
 validate_input_template_7()
 {
-    [[ $(cat $cbinputtemplatepath | jq '.RGNAME' | cut -f2 -d'"') ]] && add_log "RGNAME passed" || exit_script "RGNAME failed"
-    [[ $(cat $cbinputtemplatepath | jq '.T3CRED' | cut -f2 -d'"') ]] && add_log "T3CRED passed" || exit_script "T3CRED failed"
-    [[ $(cat $cbinputtemplatepath | jq '.CLUSNAME' | cut -f2 -d'"') ]] && add_log "CLUSNAME passed" || exit_script "CLUSNAME failed"
-    [[ $(cat $cbinputtemplatepath | jq '.BPNAME' | cut -f2 -d'"') ]] && add_log "BPNAME passed" || exit_script "BPNAME failed"
-    [[ $(cat $cbinputtemplatepath | jq '.AMBARIPWD' | cut -f2 -d'"') ]] && add_log "AMBARIPWD passed" || exit_script "AMBARIPWD failed"
-    [[ $(cat $cbinputtemplatepath | jq '.HDPREPOURL' | cut -f2 -d'"') ]] && add_log "HDPREPOURL passed" || exit_script "HDPREPOURL failed"
-    [[ $(cat $cbinputtemplatepath | jq '.HDPUTILURL' | cut -f2 -d'"') ]] && add_log "HDPUTILURL passed" || exit_script "HDPUTILURL failed"
-    [[ $(cat $cbinputtemplatepathn | jq '.VDFURL' | cut -f2 -d'"') ]] && add_log "VDFURL passed" || exit_script "VDFURL failed"
-    [[ $(cat $cbinputtemplatepath | jq '.AMBARIREPOURL' | cut -f2 -d'"') ]] && add_log "AMBARIREPOURL passed" || exit_script "AMBARIREPOURL failed"
-    [[ $(cat $cbinputtemplatepath | jq '.KRBPWD' | cut -f2 -d'"') ]] && add_log "KRBPWD passed" || exit_script "KRBPWD failed"
-    [[ $(cat $cbinputtemplatepath | jq '.KRBSPN' | cut -f2 -d'"') ]] && add_log "KRBSPN passed" || exit_script "KRBSPN failed"
-    [[ $(cat $cbinputtemplatepath | jq '.KDCIP' | cut -f2 -d'"') ]] && add_log "KDCIP passed" || exit_script "KDCIP failed"
-    [[ $(cat $cbinputtemplatepath | jq '.REALM' | cut -f2 -d'"') ]] && add_log "REALM passed" || exit_script "REALM failed"
-    [[ $(cat $cbinputtemplatepath | jq '.EXTAMBARIDB' | cut -f2 -d'"') ]] && add_log "EXTAMBARIDB passed" || exit_script "EXTAMBARIDB failed"
-    [[ $(cat $cbinputtemplatepath | jq '.IMGCATALOG' | cut -f2 -d'"') ]] && add_log "IMGCATALOG passed" || exit_script "IMGCATALOG failed"
-    [[ $(cat $cbinputtemplatepath | jq '.IMGUUID' | cut -f2 -d'"') ]] && add_log "IMGUUID passed" || exit_script "IMGUUID failed"
-    [[ $(cat $cbinputtemplatepath | jq '.SUBNET' | cut -f2 -d'"') ]] && add_log "SUBNET passed" || exit_script "SUBNET failed"
-    [[ $(cat $cbinputtemplatepath | jq '.NWRGNAME' | cut -f2 -d'"') ]] && add_log "NWRGNAME passed" || exit_script "NWRGNAME failed"
-    [[ $(cat $cbinputtemplatepath | jq '.VNET' | cut -f2 -d'"') ]] && add_log "VNET passed" || exit_script "VNET failed"
-    [[ $(cat $cbinputtemplatepath | jq '.PUBKEY' | cut -f2 -d'"') ]] && add_log "PUBKEY passed" || exit_script "PUBKEY failed"
+    [[ $(cat $cbinputtemplatepath | jq '.RGNAME' | cut -f2 -d'"') ]] && add_log "RGNAME found in the input template" || exit_script "RGNAME missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.T3CRED' | cut -f2 -d'"') ]] && add_log "T3CRED found in the input template" || exit_script "T3CRED missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.CLUSNAME' | cut -f2 -d'"') ]] && add_log "CLUSNAME found in the input template" || exit_script "CLUSNAME missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.BPNAME' | cut -f2 -d'"') ]] && add_log "BPNAME found in the input template" || exit_script "BPNAME missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.AMBARIPWD' | cut -f2 -d'"') ]] && add_log "AMBARIPWD found in the input template" || exit_script "AMBARIPWD missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.HDPREPOURL' | cut -f2 -d'"') ]] && add_log "HDPREPOURL found in the input template" || exit_script "HDPREPOURL missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.HDPUTILURL' | cut -f2 -d'"') ]] && add_log "HDPUTILURL found in the input template" || exit_script "HDPUTILURL missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.VDFURL' | cut -f2 -d'"') ]] && add_log "VDFURL found in the input template" || exit_script "VDFURL missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.AMBARIREPOURL' | cut -f2 -d'"') ]] && add_log "AMBARIREPOURL found in the input template" || exit_script "AMBARIREPOURL missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.KRBPWD' | cut -f2 -d'"') ]] && add_log "KRBPWD found in the input template" || exit_script "KRBPWD missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.KRBSPN' | cut -f2 -d'"') ]] && add_log "KRBSPN found in the input template" || exit_script "KRBSPN missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.KDCIP' | cut -f2 -d'"') ]] && add_log "KDCIP found in the input template" || exit_script "KDCIP missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.REALM' | cut -f2 -d'"') ]] && add_log "REALM found in the input template" || exit_script "REALM missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.EXTAMBARIDB' | cut -f2 -d'"') ]] && add_log "EXTAMBARIDB found in the input template" || exit_script "EXTAMBARIDB missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.IMGCATALOG' | cut -f2 -d'"') ]] && add_log "IMGCATALOG found in the input template" || exit_script "IMGCATALOG missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.IMGUUID' | cut -f2 -d'"') ]] && add_log "IMGUUID found in the input template" || exit_script "IMGUUID missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.SUBNET' | cut -f2 -d'"') ]] && add_log "SUBNET found in the input template" || exit_script "SUBNET missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.NWRGNAME' | cut -f2 -d'"') ]] && add_log "NWRGNAME found in the input template" || exit_script "NWRGNAME missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.VNET' | cut -f2 -d'"') ]] && add_log "VNET found in the input template" || exit_script "VNET missing in the input template"
+    [[ $(cat $cbinputtemplatepath | jq '.PUBKEY' | cut -f2 -d'"') ]] && add_log "PUBKEY found in the input template" || exit_script "PUBKEY missing in the input template"
 }
 
 merge_template_8()
