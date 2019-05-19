@@ -6,16 +6,15 @@ Pre-requisites:
     -	T2 components (Cloudbreak, MIT KDC, Postgres) must be up and running.
     -	Cloudbreak integrated with Azure App Key of T3 subscription.
     -	Cloudbreak must be integrated with Postgres VM in T2.
+    -   Cloudbreak must be registered with custom image catalog in the name "ddepcustomcatalog"
     -	Repo for Ambari, HDP, HDP Utils, HDF, m-pack must be available in the Artifactory
     -	Cloudbreak Image need to be available in the blob storage and accessible to Cloudbreak VM
     -	Ambari Blueprint need to be stored in the artifactory accessible to Cloudbreak VM.
     -	Cloudbreak template need to be stored in the artifactory accessible to Cloudreak VM.
-    -   epel release package need to be installed on this Cloudbreak VM
-    -   python-pip package need to be available to install on this Cloudbreak VM
-    -   Jinja2 CLI package need to be available for JSON parsing - using the command "pip install j2cli"
+    -   JQ package need to be installed on this Cloudbreak VM
+
 
 Input Parameters required for this script in the same order
-
 Parameter 1 : Cloudbreak VM IP Address
 Parameter 2 : CB file - Artifactory URL
 Parameter 3 : JQ file - Artifactory URL
@@ -37,7 +36,6 @@ Parameter 18 : T3 Subnet Name
 Parameter 19 : T3 Network Resource Group Name
 Parameter 20 : T3 VNet Name
 Parameter 21 : Public Key for VM login
-
 '
 
 # Mandatory parameters for this script
@@ -46,27 +44,27 @@ Parameter 21 : Public Key for VM login
 #cb_web_url="https://$(ip add | grep 'state UP' -A2 | head -n3 | awk '{print $2}' | cut -f1 -d'/' | tail -n1)"
 
 cb_web_url="https://$1"  # $1 Cloudbreak VM IP address
-cbutilpath="http://172.26.201.244/cb"   #  $2 CB file url from artifactory
-jqurl="http://172.26.201.244/jq"   #  $3 JQ file url from artifactory
-cbusrname=$4
+cbutilpath=$2  # CB file url from artifactory
+jqurl=$3       #  JQ file url from artifactory
+cbusrname=$4      
 cbpwd=$5
 
 #input files 
 tstmp=$(date "+%Y%m%d%H%M%S")
 clusname="hdp$tstmp"  #"Name of the cluster"
 
-cbjqtemplate="http://172.26.201.244/jqtemplate" #$6
+cbjqtemplate=$6
 cbjqtemplatepath="/tmp/.cbjqtmp_$tstmp.json"
 
-cbinputtemplate="http://172.26.201.244/inptemplate" #$7
+cbinputtemplate=$7
 cbinputtemplatepath="/tmp/.cbinputtemplate_$tstmp.json"
 
 cb_finaltemplate="/tmp/.cbfinaltemplate_$tstmp.json"
 
 #blueprint url
-bp_url="http://172.26.201.244/hdpbp.json" # $8
+bp_url=$8
 bp_path="/tmp/.hdpbp_$tstmp.json"
-
+imgcatname="ddepcustomcatalog"
 #======= Template params from Pipeline ================
 s_amb_pwd=$9
 s_krb_princ=${10}
@@ -99,7 +97,7 @@ add_log() { echo `date "+%Y-%m-%d %H:%M:%S : $1"` >> /var/log/hwx/create_cluster
 
 exit_script() # Testing Completed
 {
-    add_log "Error !!! $1 !!!"
+    add_log "ERROR - $1 !!!"
     add_log "Exiting the script execution"
     exit 1
 }
@@ -109,7 +107,7 @@ install_cb_jq_1() # CB Configure need to be tested
     if [[ ! -f /bin/cb ]]; then
         if [[ $(wget $cbutilpath -O /bin/cb) -eq 0 ]] && [[ $(chmod +x /bin/cb) -eq 0 ]];then
             add_log "CB utility downloaded successfully"
-            if [[ $(cb configure --server $cb_web_url --username $cbusrname --password $cbpwd) -eq 0 ]] && [[ $(cb cluster list) -eq 0 ]];then
+            if [[ $(cb configure --server $cb_web_url --username $cbusrname --password $cbpwd) -eq 0 ]] && [[ $(cb blueprint list) -eq 0 ]];then
                 add_log "CB configured succcessfully with Cloudbreak VM"
             else
                 exit_script "Unable to configure CB Utility with Cloudbreak"
@@ -274,7 +272,6 @@ from_cb_util_4()  # requires Testing on cb machine
         else
             exit_script "No external DB registered with Cloudbreak for Registry"
         fi
-
         if [[ $(cb database list -output table | grep RANGER | cut -f2 -d"|") -eq 0 ]]; then
             rangerdb=$(cb database list -output table | grep RANGER | cut -f2 -d"|")
             if [[ $rangerdb ]];then 
@@ -304,7 +301,7 @@ from_cb_util_4()  # requires Testing on cb machine
             exit_script "Unable to retrieve custom image catalog name registered with cloudbreak"
         fi
 
-        imgcaturl=$(cb imagecatalog list -output table | grep mycustomcatalog | cut -f4 -d"|")
+        imgcaturl=$(cb imagecatalog list -output table | grep "$imgcatname" | cut -f4 -d"|")
         imgcatpath="/tmp/.cusimgcat.json"
         if [[ $(wget $imgcaturl -O $imgcatpath) -eq 0 ]] && [[ -s $imgcatpath ]]; then
             add_log "Retrieved the imagecatalog successfully with contents"
@@ -441,4 +438,5 @@ merge_template_8
 create_cluster_9
 get_cluster_status_10
 cleanup_11
+
 
