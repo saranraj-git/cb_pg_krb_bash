@@ -241,13 +241,13 @@ create_db_3_1()
     
 }
 # Register External Postgres DB created for HDP/HDF clusters with Cloudbreak
-
 register_db_3_2()
 {
     if [[ $(cb database create postgres --name $ambaridbname --type AMBARI --url jdbc:postgresql://$pgserver:5432/$ambaridbname --db-username $pgusername --db-password $pgpwd) -eq 0 ]]; then
         
             cbambdb=$(cb database list -output table | grep $ambaridbname | cut -f2 -d"|")
             if [[ $cbambdb ]];then 
+				update_cb_input_template "EXTAMBARIDB" $cbambdb
                 add_log "Ambari DB - $ambaridbname registered successfully with Cloudbreak"
             else
                 exit_script "Unable to validate Ambari DB - $ambaridbname from cloudbreak"
@@ -261,6 +261,7 @@ register_db_3_2()
         
             cbhivedb=$(cb database list -output table | grep $hivedbname | cut -f2 -d"|")
             if [[ $cbhivedb ]];then 
+				#update_cb_input_template "EXTHIVEDB" $cbhivedb
                 add_log "Hive DB - $hivedbname registered successfully with Cloudbreak"
             else
                 exit_script "Unable to validate Hive db - $hivedbname from cloudbreak"
@@ -274,6 +275,7 @@ register_db_3_2()
         
             cbrangerdb=$(cb database list -output table | grep $rangerdbname | cut -f2 -d"|")
             if [[ $cbrangerdb ]];then 
+				#update_cb_input_template "EXTRANGERDB" $cbrangerdb
                 add_log "Ranger DB - $rangerdbname registered successfully with Cloudbreak"
             else
                 exit_script "Unable to validate Ranger db - $rangerdbname from cloudbreak"
@@ -287,6 +289,7 @@ register_db_3_2()
         
             cbregistrydb=$(cb database list -output table | grep $registrydbname | cut -f2 -d"|")
             if [[ $cbregistrydb ]];then 
+				#update_cb_input_template "EXTREGISTRYDB" $cbregistrydb
                 add_log "Registry DB - $registrydbname registered successfully with Cloudbreak"
             else
                 exit_script "Unable to validate Registry db - $registrydbname from cloudbreak"
@@ -296,7 +299,6 @@ register_db_3_2()
         exit_script "Failed to register Registry DB with Cloudbreak"
     fi
 }
-
 
 from_cb_util_4()  # requires Testing on cb machine
 {
@@ -313,67 +315,9 @@ from_cb_util_4()  # requires Testing on cb machine
         exit_script "Failed to get the Azure App Key registration name from Cloudbreak"
     fi
     
-    if [[ $(cb database list) -eq 0 ]]; then
-        if [[ $(cb database list -output table | grep AMBARI | cut -f2 -d"|") -eq 0 ]]; then
-            ambdb=$(cb database list -output table | grep AMBARI | cut -f2 -d"|")
-            if [[ $ambdb ]];then 
-                #export HWX_EXTAMBDB="$ambdb" #Ambari DB for the cluster
-                update_cb_input_template "EXTAMBARIDB" $ambdb
-                add_log "Ambari database name - registered with Cloudbreak, retrieved successfully"
-            else
-                exit_script "Unable to retrieve Ambari db name registered with cloudbreak"
-            fi
-        else
-            exit_script "No external DB registered with Cloudbreak for Ambari"
-        fi
-        
-        : '
-        if [[ $(cb database list -output table | grep HIVE | cut -f2 -d"|") -eq 0 ]]; then
-            hivedb=$(cb database list -output table | grep HIVE | cut -f2 -d"|")
-            if [[ $hivedb ]];then 
-                #export HWX_EXTHIVEDB="$hivedb"  #Hive DB for the cluster
-                update_cb_input_template "EXTHIVEDB" $hivedb
-                add_log "Hive database name - registered with Cloudbreak, retrieved successfully"
-            else
-                exit_script "Unable to retrieve Hive db name registered with cloudbreak"
-            fi
-        else
-            exit_script "No external DB registered with Cloudbreak for Hive"
-        fi
-        
-        if [[ $(cb database list -output table | grep REGISTRY | cut -f2 -d"|") -eq 0 ]]; then
-            registrydb=$(cb database list -output table | grep REGISTRY | cut -f2 -d"|")
-            if [[ $registrydb ]];then 
-                #export HWX_EXTREGISTRYDB="$registrydb"  #ranger db for the cluster
-                update_cb_input_template "EXTREGISTRYDB" $registrydb
-                add_log "Registry database name - registered with Cloudbreak, retrieved successfully"
-            else
-                exit_script "Unable to retrieve Registry db name registered with cloudbreak"
-            fi
-        else
-            exit_script "No external DB registered with Cloudbreak for Registry"
-        fi
-        if [[ $(cb database list -output table | grep RANGER | cut -f2 -d"|") -eq 0 ]]; then
-            rangerdb=$(cb database list -output table | grep RANGER | cut -f2 -d"|")
-            if [[ $rangerdb ]];then 
-                #export HWX_EXTRANGERDB="$rangerdb"  #ranger db for the cluster
-                update_cb_input_template "EXTRANGERDB" $rangerdb
-                add_log "Ranger database name - registered with Cloudbreak, retrieved successfully"
-            else
-                exit_script "Unable to retrieve Ranger db name registered with cloudbreak"
-            fi
-        else
-            exit_script "No external DB registered with Cloudbreak for Ranger"
-        fi
-        '
-        # 
-        # 
-    else
-	    exit_script "Unable to retrieve external database name registered with Cloudbreak"
-    fi
-
-    if [[ $(cb imagecatalog list -output table | grep mycustomcatalog | cut -f2 -d"|") -eq 0 ]]; then
-        imgcat=$(cb imagecatalog list -output table | grep mycustomcatalog | cut -f2 -d"|")
+	
+    if [[ $(cb imagecatalog list -output table | grep ddepcustomcatalog | cut -f2 -d"|") -eq 0 ]]; then
+        imgcat=$(cb imagecatalog list -output table | grep ddepcustomcatalog | cut -f2 -d"|")
         if [[ $imgcat ]];then
             update_cb_input_template "IMGCATALOG" $imgcat
             #export HWX_IMGCATALOG="$imgcat" #custom image catalog registered with cloudbreak
@@ -382,7 +326,7 @@ from_cb_util_4()  # requires Testing on cb machine
             exit_script "Unable to retrieve custom image catalog name registered with cloudbreak"
         fi
 
-        imgcaturl=$(cb imagecatalog list -output table | grep "$imgcatname" | cut -f4 -d"|")
+        imgcaturl=$(cb imagecatalog list -output table | grep "$imgcat" | cut -f4 -d"|")
         imgcatpath="/tmp/.cusimgcat.json"
         if [[ $(wget $imgcaturl -O $imgcatpath) -eq 0 ]] && [[ -s $imgcatpath ]]; then
             add_log "Retrieved the imagecatalog successfully with contents"
@@ -401,6 +345,8 @@ from_cb_util_4()  # requires Testing on cb machine
         exit_script "Unable to retrieve custom image catalog name registered with cloudbreak"
     fi
 }
+
+
 
 get_bp_5() 
 {    
