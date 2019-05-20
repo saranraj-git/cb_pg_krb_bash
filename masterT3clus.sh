@@ -447,26 +447,12 @@ get_cluster_status_10()
 {
     status="Initial"
     add_log "Checking Cluster deployment status....."
-    while [ $status == "Initial" ]
-    do
-    sleep 10s
     st=$(cb cluster describe --name $clusname | jq '.statusReason')
-    add_log "Cluster status - $st"
-        if [ $st == "Cluster creation finished." ] || [ $st == "Failed" ]; then
-            fst=$(cb cluster describe --name $clusname | jq '.cluster.status')
-            if [[ $fst =~ "AVAILABLE" ]];then
-                $status="Finished"
-                add_log "Cluster creation completed"
-                amb=$(cb cluster describe --name $clusname | grep -i ambariServerUrl)
-                add_log "Cluster status is AVAILABLE"
-                add_log "Ambari Server URL - $amb"
-            fi
-            if [[ $fst =~ "FAILED" ]];then
-                $status="FAILED"
-                exit_script "Cluster creation Failed - check the logs in the Cloudbreak VM using the command cbd logs cloudbreak"
-            fi
-        fi
-    done
+    add_log "Cluster status Reason - $st"
+    fst=$(cb cluster describe --name $clusname | jq '.cluster.status')
+    add_log "Cluster status - $fst"
+    amb=$(cb cluster describe --name $clusname | grep -i ambariServerUrl)
+    add_log "Ambari Server URL - $amb"
 }
 
 cleanup_11()
