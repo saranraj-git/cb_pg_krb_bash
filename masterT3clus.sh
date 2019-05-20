@@ -108,13 +108,23 @@ exit_script() # Testing Completed
     exit 1
 }
 
-install_cb_jq_1() # CB Configure need to be tested
+install_cb_jq_1() # Testing Completed
 {
     if [[ ! -f /bin/cb ]]; then
         if [[ $(wget $cbutilpath -O /bin/cb) -eq 0 ]] && [[ $(chmod +x /bin/cb) -eq 0 ]];then
             add_log "CB utility downloaded successfully"
-            if [[ $(cb configure --server $cb_web_url --username $cbusrname --password $cbpwd) -eq 0 ]] && [[ $(cb blueprint list) -eq 0 ]];then
-                add_log "CB configured succcessfully with Cloudbreak VM"
+            if [[ $(cb configure --server "$cb_web_url" --username "$cbusrname" --password "$cbpwd") -eq 0 ]];then
+				if [[ $(cb credential list | jq '.[].Name' | cut -f2 -d '"') -eq 0 ]]; then
+					crname=$(cb credential list | jq '.[].Name' | cut -f2 -d '"')
+					if [[ $crname ]];then
+						add_log "CB configured succcessfully with Cloudbreak VM"
+					else
+						exit_script "Unable to configure CB Utility with Cloudbreak"
+					fi
+				else 
+					exit_script "Unable to configure CB Utility with Cloudbreak"
+				fi
+                
             else
                 exit_script "Unable to configure CB Utility with Cloudbreak"
             fi
@@ -123,8 +133,18 @@ install_cb_jq_1() # CB Configure need to be tested
         fi
     else
         add_log "CB file already exists"
-        if [[ $(cb configure --server $cb_web_url --username $cbusername --password $cbpwd) -eq 0 ]] && [[ $(cb cluster list) -eq 0 ]];then
-            add_log "CB configured succcessfully with Cloudbreak VM"
+        if [[ $(cb configure --server "$cb_web_url" --username "$cbusrname" --password "$cbpwd") -eq 0 ]];then
+				if [[ $(cb credential list | jq '.[].Name' | cut -f2 -d '"') -eq 0 ]]; then
+					crname=$(cb credential list | jq '.[].Name' | cut -f2 -d '"')
+					if [[ $crname ]];then
+						add_log "CB configured succcessfully with Cloudbreak VM"
+					else
+						exit_script "Unable to configure CB Utility with Cloudbreak"
+					fi
+				else 
+					exit_script "Unable to configure CB Utility with Cloudbreak"
+				fi
+                
         else
             exit_script "Unable to configure CB Utility with Cloudbreak"
         fi
@@ -376,7 +396,7 @@ register_blueprint_6() # Testing completed
     fi
 }
 
-validate_input_template_7()
+validate_input_template_7() # Testing completed 
 {
     [[ $(cat $cbinputtemplatepath | jq '.RGNAME' | cut -f2 -d'"') ]] && add_log "RGNAME found in the input template" || exit_script "RGNAME missing in the input template"
     [[ $(cat $cbinputtemplatepath | jq '.T3CRED' | cut -f2 -d'"') ]] && add_log "T3CRED found in the input template" || exit_script "T3CRED missing in the input template"
@@ -399,6 +419,7 @@ validate_input_template_7()
     [[ $(cat $cbinputtemplatepath | jq '.VNET' | cut -f2 -d'"') ]] && add_log "VNET found in the input template" || exit_script "VNET missing in the input template"
     [[ $(cat $cbinputtemplatepath | jq '.PUBKEY' | cut -f2 -d'"') ]] && add_log "PUBKEY found in the input template" || exit_script "PUBKEY missing in the input template"
 }
+
 
 merge_template_8()
 {
