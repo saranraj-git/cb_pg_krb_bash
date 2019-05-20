@@ -223,7 +223,7 @@ get_pipeline_param_3() # Testing completed
 }
 
 
-create_db_3_1()
+create_db_3_1() # Testing completed 
 {
 	 echo "CREATE DATABASE $ambaridbname;" > /tmp/.dbcmd.txt
 	 echo "CREATE DATABASE $hivedbname;" >> /tmp/.dbcmd.txt
@@ -241,7 +241,7 @@ create_db_3_1()
     
 }
 # Register External Postgres DB created for HDP/HDF clusters with Cloudbreak
-register_db_3_2()
+register_db_3_2() # Testing completed 
 {
     if [[ $(cb database create postgres --name $ambaridbname --type AMBARI --url jdbc:postgresql://$pgserver:5432/$ambaridbname --db-username $pgusername --db-password $pgpwd) -eq 0 ]]; then
         
@@ -300,7 +300,7 @@ register_db_3_2()
     fi
 }
 
-from_cb_util_4()  # requires Testing on cb machine
+from_cb_util_4()  # Testing completed 
 {
     if [[ $(cb credential list | jq '.[].Name' | cut -f2 -d '"') -eq 0 ]]; then
         crname=$(cb credential list | jq '.[].Name' | cut -f2 -d '"')
@@ -348,7 +348,7 @@ from_cb_util_4()  # requires Testing on cb machine
 
 
 
-get_bp_5() 
+get_bp_5() # Testing completed 
 {    
     if [[ $(wget "$bp_url" -O "$bp_path") -eq 0 ]] && [[ -s "$bp_path" ]]; then
         add_log "Ambari Blueprint successfully downloaded under $bp_path"
@@ -357,7 +357,7 @@ get_bp_5()
     fi
 }
 
-register_blueprint_6()
+register_blueprint_6() # Testing completed 
 {
     add_log "Registering custom HDP Blueprint with Cloudbreak"
     if [[ $(cb blueprint create from-file --name $clusname --file $bp_path) -eq 0 ]]; then
