@@ -239,6 +239,7 @@ make_dep()
     if [[ $(tar -czf cbbin.tar.gz .) -eq 0 ]]; then add_log "Archiving dependencies successfull" ; else exit_script "Archiving dependencies FAILED"; fi
     cp cbbin.tar.gz /tmp/
     cp /bin/cbd /tmp/
+    cp /bin/cb /tmp
     pushd /tmp/
     add_log "Archiving dependencies with docker tar file ...."
 
